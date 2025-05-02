@@ -17,12 +17,12 @@ os.makedirs(DEFAULT_EXPORT_PATH, exist_ok=True)
 
 # Category mappings for content creators
 CONTENT_CATEGORIES = {
-    "books": "22",        # Books & Literature
-    "news": "16",         # News
-    "arts": "5",          # Arts & Entertainment
-    "fiction": "22",      # Books & Literature (we'll filter further in code)
-    "culture": "3",       # Arts & Entertainment - Performing Arts
-    "all": "0"            # All categories
+    "books": "22",  # Books & Literature
+    "news": "16",  # News
+    "arts": "5",  # Arts & Entertainment
+    "fiction": "22",  # Books & Literature (we'll filter further in code)
+    "culture": "3",  # Arts & Entertainment - Performing Arts
+    "all": "0",  # All categories
 }
 
 # Region code mappings (partial list, will be expanded)
@@ -33,7 +33,7 @@ REGION_CODES = {
     "uae": "AE",
     "saudi": "SA",
     "egypt": "EG",
-    "global": "",         # Empty string for global
+    "global": "",  # Empty string for global
 }
 
 # Time periods for showcases
