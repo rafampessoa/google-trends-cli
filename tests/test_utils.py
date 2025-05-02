@@ -2,7 +2,6 @@
 
 from unittest.mock import patch
 
-
 from gtrends.utils import (
     determine_locale,
     format_region_name,
