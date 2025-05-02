@@ -15,19 +15,9 @@ extras_require = {
 
 setup(
     name="gtrends-cli",
-<<<<<<< Updated upstream
-    version="0.1.0",
-    author="KitabTune",
-    author_email="info@kitabtune.com",
-||||||| Stash base
-    version="0.1.1",
-    author="KitabTune",
-    author_email="info@kitabtune.com",
-=======
     version="0.1.1",
     author="Mohammed A. Al-Kebsi",
     author_email="mohammed.k@mohammed-al-kebsi.space",
->>>>>>> Stashed changes
     description="CLI tool for Google Trends data analysis and content suggestions",
     long_description=long_description,
     long_description_content_type="text/markdown",
