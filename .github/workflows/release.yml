@@ -46,7 +46,7 @@ jobs:
       - name: Get current version
         id: current
         run: |
-          CURRENT_VERSION=$(grep -Po "__version__ = '\K[^']*" gtrends/__init__.py)
+          CURRENT_VERSION=$(grep -Po "__version__\s*=\s*[\"']\K[^\"']*" gtrends/__init__.py)
           echo "Current version: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
