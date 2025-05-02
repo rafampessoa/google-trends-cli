@@ -1,10 +1,11 @@
 """Tests for CLI commands."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 from click.testing import CliRunner
-from unittest.mock import patch, MagicMock
 
-from gtrends.cli import cli, trending, related, suggest_topics, compare, writing_opportunities
+from gtrends.cli import cli, compare, related, suggest_topics, trending, writing_opportunities
 
 
 @pytest.fixture

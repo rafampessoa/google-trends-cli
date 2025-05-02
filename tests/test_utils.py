@@ -1,15 +1,16 @@
 """Tests for utility functions."""
 
-import pytest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from gtrends.utils import (
     determine_locale,
-    validate_region_code,
-    validate_export_path,
-    parse_timeframe,
     format_region_name,
+    parse_timeframe,
+    validate_export_path,
+    validate_region_code,
 )
 
 

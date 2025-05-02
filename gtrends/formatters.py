@@ -1,17 +1,18 @@
 """Output formatting utilities."""
 
-import os
-import pandas as pd
 import json
+import os
 import time
-from typing import Dict, Any, Union, Optional, List, Tuple
 from pathlib import Path
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.text import Text
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import pandas as pd
 from rich.box import ROUNDED
+from rich.console import Console
+from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
+from rich.text import Text
 
 console = Console()
 

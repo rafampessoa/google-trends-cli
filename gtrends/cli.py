@@ -1,36 +1,37 @@
 """Command-line interface for Google Trends tool."""
 
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import click
 import pandas as pd
-from pathlib import Path
-from typing import Optional, List, Dict, Any, Tuple
 from rich.console import Console
-import sys
 
-from gtrends.trends_api import TrendsClient
-from gtrends.formatters import (
-    format_trending_searches,
-    format_related_data,
-    format_interest_by_region,
-    format_interest_over_time,
-    export_to_file,
-    with_spinner,
-)
-from gtrends.content_suggestions import ContentSuggester
-from gtrends.utils import (
-    validate_region_code,
-    validate_export_path,
-    parse_timeframe,
-    format_region_name,
-)
 from gtrends.config import (
-    DEFAULT_REGION,
-    DEFAULT_TIMEFRAME,
-    DEFAULT_CATEGORY,
-    DEFAULT_SUGGESTIONS_COUNT,
     CONTENT_CATEGORIES,
+    DEFAULT_CATEGORY,
+    DEFAULT_REGION,
+    DEFAULT_SUGGESTIONS_COUNT,
+    DEFAULT_TIMEFRAME,
     REGION_CODES,
     BatchPeriod,
+)
+from gtrends.content_suggestions import ContentSuggester
+from gtrends.formatters import (
+    export_to_file,
+    format_interest_by_region,
+    format_interest_over_time,
+    format_related_data,
+    format_trending_searches,
+    with_spinner,
+)
+from gtrends.trends_api import TrendsClient
+from gtrends.utils import (
+    format_region_name,
+    parse_timeframe,
+    validate_export_path,
+    validate_region_code,
 )
 
 console = Console()

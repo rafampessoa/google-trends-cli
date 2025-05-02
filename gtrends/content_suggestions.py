@@ -1,13 +1,14 @@
 """Content creator suggestion features."""
 
-import pandas as pd
-import numpy as np
-from typing import List, Dict, Optional, Union, Tuple
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
+import pandas as pd
 from trendspy import BatchPeriod
 
-from gtrends.trends_api import TrendsClient
 from gtrends.config import CONTENT_CATEGORIES, DEFAULT_REGION
+from gtrends.trends_api import TrendsClient
 
 
 class ContentSuggester:

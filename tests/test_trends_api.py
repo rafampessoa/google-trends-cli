@@ -1,11 +1,12 @@
 """Tests for TrendsClient."""
 
-import pytest
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
-from unittest.mock import patch, MagicMock
+import pytest
+from trendspy import Trends  # You may need to mock this
 
 from gtrends.trends_api import TrendsClient
-from trendspy import Trends  # You may need to mock this
 
 
 class TestTrendsClient:

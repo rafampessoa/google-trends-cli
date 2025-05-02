@@ -1,17 +1,18 @@
 """Tests for formatting functions."""
 
-import pytest
-import pandas as pd
 import os
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pandas as pd
+import pytest
 
 from gtrends.formatters import (
-    format_trending_searches,
-    format_related_data,
+    export_to_file,
     format_interest_by_region,
     format_interest_over_time,
-    export_to_file,
+    format_related_data,
+    format_trending_searches,
     is_bat_available,
 )
 

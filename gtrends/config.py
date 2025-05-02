@@ -1,8 +1,8 @@
 """Configuration settings for the Google Trends CLI tool."""
 
 import os
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 
 # Default configurations
 DEFAULT_REGION = "US"  # Will be overridden by IP-based location when possible

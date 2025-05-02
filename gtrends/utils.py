@@ -1,11 +1,12 @@
 """Helper utilities and functions."""
 
+import locale
 import os
 import sys
-import locale
-from typing import Optional, List, Dict, Any
-from pathlib import Path
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 from gtrends.config import DEFAULT_EXPORT_PATH, DEFAULT_TIMEFRAME
 
 

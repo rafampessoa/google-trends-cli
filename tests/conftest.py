@@ -1,12 +1,13 @@
 """Pytest configuration and shared fixtures."""
 
-import pytest
-import pandas as pd
-from unittest.mock import MagicMock, patch
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from gtrends.trends_api import TrendsClient
+import pandas as pd
+import pytest
+
 from gtrends.content_suggestions import ContentSuggester
+from gtrends.trends_api import TrendsClient
 
 
 @pytest.fixture
