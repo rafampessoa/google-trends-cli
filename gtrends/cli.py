@@ -14,14 +14,14 @@ from gtrends.formatters import (
     format_interest_by_region,
     format_interest_over_time,
     export_to_file,
-    with_spinner
+    with_spinner,
 )
 from gtrends.content_suggestions import ContentSuggester
 from gtrends.utils import (
     validate_region_code,
     validate_export_path,
     parse_timeframe,
-    format_region_name
+    format_region_name,
 )
 from gtrends.config import (
     DEFAULT_REGION,
@@ -30,30 +30,48 @@ from gtrends.config import (
     DEFAULT_SUGGESTIONS_COUNT,
     CONTENT_CATEGORIES,
     REGION_CODES,
-    BatchPeriod
+    BatchPeriod,
 )
 
 console = Console()
 
 
 @click.group()
-@click.version_option(version='0.0.1')
+@click.version_option(version="0.0.1")
 def cli():
     """Google Trends CLI - Fetch trending topics and analyze search interests for content creators."""
     pass
 
 
 @cli.command()
-@click.option("--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified.")
-@click.option("--count", "-n", type=int, default=DEFAULT_SUGGESTIONS_COUNT,
-              help=f"Number of results to display. Default: {DEFAULT_SUGGESTIONS_COUNT}")
+@click.option(
+    "--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified."
+)
+@click.option(
+    "--count",
+    "-n",
+    type=int,
+    default=DEFAULT_SUGGESTIONS_COUNT,
+    help=f"Number of results to display. Default: {DEFAULT_SUGGESTIONS_COUNT}",
+)
 @click.option("--with-news", "-w", is_flag=True, help="Include related news articles")
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
-def trending(region: Optional[str], count: int, with_news: bool,
-             export: bool, export_path: Optional[str], format: str):
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
+def trending(
+    region: Optional[str],
+    count: int,
+    with_news: bool,
+    export: bool,
+    export_path: Optional[str],
+    format: str,
+):
     """Show current trending searches on Google."""
     try:
         client = TrendsClient()
@@ -62,8 +80,7 @@ def trending(region: Optional[str], count: int, with_news: bool,
         if with_news:
             with_spinner("Fetching trending searches with news articles...")(lambda: None)()
             trending_df, news_articles = client.get_trending_searches_with_articles(
-                region=region_code,
-                limit=count
+                region=region_code, limit=count
             )
         else:
             with_spinner("Fetching trending searches...")(lambda: None)()
@@ -78,7 +95,7 @@ def trending(region: Optional[str], count: int, with_news: bool,
             trending_df,
             title=f"Trending Searches - {region_name}",
             count=count,
-            news_articles=news_articles
+            news_articles=news_articles,
         )
 
         # Export if requested
@@ -93,19 +110,47 @@ def trending(region: Optional[str], count: int, with_news: bool,
 
 @cli.command()
 @click.argument("query", type=str)
-@click.option("--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified.")
-@click.option("--timeframe", "-t", default=DEFAULT_TIMEFRAME,
-              help=f"Timeframe for data (e.g., 'today 1-d', 'today 3-m'). Default: {DEFAULT_TIMEFRAME}")
-@click.option("--category", type=str, default=DEFAULT_CATEGORY,
-              help=f"Category ID to filter results. Default: {DEFAULT_CATEGORY} (All)")
-@click.option("--count", "-n", type=int, default=DEFAULT_SUGGESTIONS_COUNT,
-              help=f"Number of results to display. Default: {DEFAULT_SUGGESTIONS_COUNT}")
+@click.option(
+    "--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified."
+)
+@click.option(
+    "--timeframe",
+    "-t",
+    default=DEFAULT_TIMEFRAME,
+    help=f"Timeframe for data (e.g., 'today 1-d', 'today 3-m'). Default: {DEFAULT_TIMEFRAME}",
+)
+@click.option(
+    "--category",
+    type=str,
+    default=DEFAULT_CATEGORY,
+    help=f"Category ID to filter results. Default: {DEFAULT_CATEGORY} (All)",
+)
+@click.option(
+    "--count",
+    "-n",
+    type=int,
+    default=DEFAULT_SUGGESTIONS_COUNT,
+    help=f"Number of results to display. Default: {DEFAULT_SUGGESTIONS_COUNT}",
+)
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
-def related(query: str, region: Optional[str], timeframe: str, category: str,
-            count: int, export: bool, export_path: Optional[str], format: str):
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
+def related(
+    query: str,
+    region: Optional[str],
+    timeframe: str,
+    category: str,
+    count: int,
+    export: bool,
+    export_path: Optional[str],
+    format: str,
+):
     """Show topics and queries related to a search term."""
     try:
         client = TrendsClient()
@@ -115,19 +160,13 @@ def related(query: str, region: Optional[str], timeframe: str, category: str,
         # Get related topics
         with_spinner(f"Fetching related topics for '{query}'...")(lambda: None)()
         related_topics = client.get_related_topics(
-            query=query,
-            region=region_code,
-            timeframe=timeframe_parsed,
-            category=category
+            query=query, region=region_code, timeframe=timeframe_parsed, category=category
         )
 
         # Get related queries
         with_spinner(f"Fetching related queries for '{query}'...")(lambda: None)()
         related_queries = client.get_related_queries(
-            query=query,
-            region=region_code,
-            timeframe=timeframe_parsed,
-            category=category
+            query=query, region=region_code, timeframe=timeframe_parsed, category=category
         )
 
         # Display results
@@ -135,7 +174,8 @@ def related(query: str, region: Optional[str], timeframe: str, category: str,
         region_name = format_region_name(region_display)
 
         console.print(
-            f"[bold]Related data for '{query}' in {region_name} over {timeframe_parsed}[/bold]\n")
+            f"[bold]Related data for '{query}' in {region_name} over {timeframe_parsed}[/bold]\n"
+        )
 
         format_related_data(related_topics, data_type="topics", count=count)
         format_related_data(related_queries, data_type="queries", count=count)
@@ -157,19 +197,43 @@ def related(query: str, region: Optional[str], timeframe: str, category: str,
 
 
 @cli.command()
-@click.option("--category", "-c", default="books",
-              help="Content category (books, news, arts, fiction, culture)")
-@click.option("--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified.")
-@click.option("--timeframe", "-t", default="now 7-d",
-              help="Timeframe for data (e.g., 'now 7-d', 'today 1-m')")
-@click.option("--count", "-n", type=int, default=DEFAULT_SUGGESTIONS_COUNT,
-              help=f"Number of results to display. Default: {DEFAULT_SUGGESTIONS_COUNT}")
+@click.option(
+    "--category",
+    "-c",
+    default="books",
+    help="Content category (books, news, arts, fiction, culture)",
+)
+@click.option(
+    "--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified."
+)
+@click.option(
+    "--timeframe", "-t", default="now 7-d", help="Timeframe for data (e.g., 'now 7-d', 'today 1-m')"
+)
+@click.option(
+    "--count",
+    "-n",
+    type=int,
+    default=DEFAULT_SUGGESTIONS_COUNT,
+    help=f"Number of results to display. Default: {DEFAULT_SUGGESTIONS_COUNT}",
+)
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
-def suggest_topics(category: str, region: Optional[str], timeframe: str, count: int,
-                   export: bool, export_path: Optional[str], format: str):
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
+def suggest_topics(
+    category: str,
+    region: Optional[str],
+    timeframe: str,
+    count: int,
+    export: bool,
+    export_path: Optional[str],
+    format: str,
+):
     """Suggest trending topics for content creators."""
     try:
         client = TrendsClient()
@@ -179,10 +243,7 @@ def suggest_topics(category: str, region: Optional[str], timeframe: str, count: 
         timeframe_parsed = parse_timeframe(timeframe)
         with_spinner(f"Finding content suggestions in {category} category...")(lambda: None)()
         suggestions_df = suggester.suggest_topics(
-            category=category,
-            region=region_code,
-            timeframe=timeframe_parsed,
-            count=count
+            category=category, region=region_code, timeframe=timeframe_parsed, count=count
         )
 
         # Display results
@@ -206,10 +267,10 @@ def suggest_topics(category: str, region: Optional[str], timeframe: str, count: 
         for i, (_, row) in enumerate(suggestions_df.iterrows(), 1):
             table.add_row(
                 str(i),
-                row['topic'],
-                str(int(row['relevance_score'])),
-                row['source'],
-                "↑ Rising" if row['rising'] else "✓ Stable"
+                row["topic"],
+                str(int(row["relevance_score"])),
+                row["source"],
+                "↑ Rising" if row["rising"] else "✓ Stable",
             )
 
         console.print(table)
@@ -226,28 +287,53 @@ def suggest_topics(category: str, region: Optional[str], timeframe: str, count: 
 
 @cli.command()
 @click.argument("topics", nargs=-1, required=True)
-@click.option("--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified.")
-@click.option("--timeframe", "-t", default="today 3-m",
-              help="Timeframe for data (e.g., 'today 3-m', 'today 12-m')")
-@click.option("--category", type=str, default=DEFAULT_CATEGORY,
-              help=f"Category ID to filter results. Default: {DEFAULT_CATEGORY} (All)")
+@click.option(
+    "--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified."
+)
+@click.option(
+    "--timeframe",
+    "-t",
+    default="today 3-m",
+    help="Timeframe for data (e.g., 'today 3-m', 'today 12-m')",
+)
+@click.option(
+    "--category",
+    type=str,
+    default=DEFAULT_CATEGORY,
+    help=f"Category ID to filter results. Default: {DEFAULT_CATEGORY} (All)",
+)
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
 @click.option("--visualize", "-v", is_flag=True, help="Generate visualization")
-def compare(topics, region: Optional[str], timeframe: str, category: str,
-            export: bool, export_path: Optional[str], format: str, visualize: bool):
+def compare(
+    topics,
+    region: Optional[str],
+    timeframe: str,
+    category: str,
+    export: bool,
+    export_path: Optional[str],
+    format: str,
+    visualize: bool,
+):
     """Compare interest over time for multiple topics (max 5)."""
     try:
         if not topics:
             console.print(
-                "[bold red]Error:[/bold red] Please provide at least one topic to compare.")
+                "[bold red]Error:[/bold red] Please provide at least one topic to compare."
+            )
             return
 
         if len(topics) > 5:
             console.print(
-                "[bold yellow]Warning:[/bold yellow] Google Trends supports comparing max 5 topics. Using first 5.")
+                "[bold yellow]Warning:[/bold yellow] Google Trends supports comparing max 5 topics. Using first 5."
+            )
             topics = topics[:5]
 
         client = TrendsClient()
@@ -257,10 +343,7 @@ def compare(topics, region: Optional[str], timeframe: str, category: str,
 
         with_spinner(f"Comparing interest for topics: {', '.join(topics)}...")(lambda: None)()
         interest_df = client.get_interest_over_time(
-            queries=list(topics),
-            region=region_code,
-            timeframe=timeframe_parsed,
-            category=category
+            queries=list(topics), region=region_code, timeframe=timeframe_parsed, category=category
         )
 
         # Display results
@@ -281,7 +364,7 @@ def compare(topics, region: Optional[str], timeframe: str, category: str,
         format_interest_over_time(
             interest_df,
             title=f"Interest Comparison - {region_name} over {timeframe_parsed}",
-            export_path=viz_path if visualize else None
+            export_path=viz_path if visualize else None,
         )
 
         # Export if requested
@@ -295,19 +378,35 @@ def compare(topics, region: Optional[str], timeframe: str, category: str,
 
 
 @cli.command()
-@click.option("--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified.")
-@click.option("--timeframe", "-t", default="today 1-m",
-              help="Timeframe for data (e.g., 'today 1-m', 'now 7-d')")
-@click.option("--count", "-n", type=int, default=5,
-              help="Number of opportunities to find")
+@click.option(
+    "--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified."
+)
+@click.option(
+    "--timeframe",
+    "-t",
+    default="today 1-m",
+    help="Timeframe for data (e.g., 'today 1-m', 'now 7-d')",
+)
+@click.option("--count", "-n", type=int, default=5, help="Number of opportunities to find")
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
 @click.argument("seed_topics", nargs=-1)
-def writing_opportunities(region: Optional[str], timeframe: str, count: int,
-                          export: bool, export_path: Optional[str], format: str,
-                          seed_topics):
+def writing_opportunities(
+    region: Optional[str],
+    timeframe: str,
+    count: int,
+    export: bool,
+    export_path: Optional[str],
+    format: str,
+    seed_topics,
+):
     """Find specific writing opportunities based on trends."""
     try:
         client = TrendsClient()
@@ -323,13 +422,14 @@ def writing_opportunities(region: Optional[str], timeframe: str, count: int,
             seed_topics=seed_topics_list,
             region=region_code,
             timeframe=timeframe_parsed,
-            count=count
+            count=count,
         )
 
         # Display results
         if opportunities_df.empty:
             console.print(
-                "[yellow]No writing opportunities found for the given parameters.[/yellow]")
+                "[yellow]No writing opportunities found for the given parameters.[/yellow]"
+            )
             return
 
         region_display = region_code if region_code else client.get_current_region()
@@ -347,17 +447,13 @@ def writing_opportunities(region: Optional[str], timeframe: str, count: int,
 
         for i, (_, row) in enumerate(opportunities_df.iterrows(), 1):
             # Format growth value
-            if row['growth_value'] >= 5000:
+            if row["growth_value"] >= 5000:
                 growth_str = "Breakout"  # Google's term for >5000%
             else:
                 growth_str = f"+{row['growth_value']:.0f}%"
 
             table.add_row(
-                str(i),
-                row['opportunity'],
-                row['related_to'],
-                growth_str,
-                row['suggestion']
+                str(i), row["opportunity"], row["related_to"], growth_str, row["suggestion"]
             )
 
         console.print(table)
@@ -374,19 +470,32 @@ def writing_opportunities(region: Optional[str], timeframe: str, count: int,
 
 @cli.command()
 @click.argument("topics", nargs=-1, required=True)
-@click.option("--period", "-p", type=click.Choice(['4h', '24h', '48h', '7d']), default="24h",
-              help="Time period to analyze (4h, 24h, 48h, 7d)")
+@click.option(
+    "--period",
+    "-p",
+    type=click.Choice(["4h", "24h", "48h", "7d"]),
+    default="24h",
+    help="Time period to analyze (4h, 24h, 48h, 7d)",
+)
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
 @click.option("--visualize", "-v", is_flag=True, help="Generate visualization")
-def topic_growth(topics, period: str, export: bool, export_path: Optional[str], format: str, visualize: bool):
+def topic_growth(
+    topics, period: str, export: bool, export_path: Optional[str], format: str, visualize: bool
+):
     """Analyze growth patterns for multiple topics with independent normalization."""
     try:
         if not topics:
             console.print(
-                "[bold red]Error:[/bold red] Please provide at least one topic to analyze.")
+                "[bold red]Error:[/bold red] Please provide at least one topic to analyze."
+            )
             return
 
         # Map period string to BatchPeriod enum
@@ -394,7 +503,7 @@ def topic_growth(topics, period: str, export: bool, export_path: Optional[str], 
             "4h": BatchPeriod.Past4H,
             "24h": BatchPeriod.Past24H,
             "48h": BatchPeriod.Past48H,
-            "7d": BatchPeriod.Past7D
+            "7d": BatchPeriod.Past7D,
         }
 
         batch_period = period_map[period]
@@ -405,13 +514,11 @@ def topic_growth(topics, period: str, export: bool, export_path: Optional[str], 
         # Max topics warning
         if len(topics) > 20:  # Show warning but don't truncate (TrendsPy can handle hundreds)
             console.print(
-                "[bold yellow]Warning:[/bold yellow] Analyzing many topics. This may take a while.")
+                "[bold yellow]Warning:[/bold yellow] Analyzing many topics. This may take a while."
+            )
 
         with_spinner(f"Analyzing growth patterns for {len(topics)} topics...")(lambda: None)()
-        growth_df = suggester.get_topic_growth_data(
-            topics=list(topics),
-            time_period=batch_period
-        )
+        growth_df = suggester.get_topic_growth_data(topics=list(topics), time_period=batch_period)
 
         # Display results
         if growth_df.empty:
@@ -428,7 +535,7 @@ def topic_growth(topics, period: str, export: bool, export_path: Optional[str], 
         format_interest_over_time(
             growth_df,
             title=f"Topic Growth Analysis - Past {period}",
-            export_path=viz_path if visualize else None
+            export_path=viz_path if visualize else None,
         )
 
         # Export if requested
@@ -443,21 +550,45 @@ def topic_growth(topics, period: str, export: bool, export_path: Optional[str], 
 
 @cli.command()
 @click.argument("query", type=str)
-@click.option("--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified.")
-@click.option("--resolution", type=click.Choice(['COUNTRY', 'REGION', 'CITY', 'DMA']), default='COUNTRY',
-              help="Geographic resolution level")
-@click.option("--timeframe", "-t", default="today 12-m",
-              help="Timeframe for data (e.g., 'today 12-m')")
-@click.option("--category", type=str, default=DEFAULT_CATEGORY,
-              help=f"Category ID to filter results. Default: {DEFAULT_CATEGORY} (All)")
-@click.option("--count", "-n", type=int, default=20,
-              help="Number of regions to display")
+@click.option(
+    "--region", "-r", help="Region code (e.g., US, GB, AE). Auto-detects if not specified."
+)
+@click.option(
+    "--resolution",
+    type=click.Choice(["COUNTRY", "REGION", "CITY", "DMA"]),
+    default="COUNTRY",
+    help="Geographic resolution level",
+)
+@click.option(
+    "--timeframe", "-t", default="today 12-m", help="Timeframe for data (e.g., 'today 12-m')"
+)
+@click.option(
+    "--category",
+    type=str,
+    default=DEFAULT_CATEGORY,
+    help=f"Category ID to filter results. Default: {DEFAULT_CATEGORY} (All)",
+)
+@click.option("--count", "-n", type=int, default=20, help="Number of regions to display")
 @click.option("--export", "-e", is_flag=True, help="Export results to file")
 @click.option("--export-path", type=str, help="Directory to save exported data")
-@click.option("--format", "-f", type=click.Choice(['csv', 'json', 'xlsx']), default='csv',
-              help="Export format")
-def geo_interest(query: str, region: Optional[str], resolution: str, timeframe: str,
-                 category: str, count: int, export: bool, export_path: Optional[str], format: str):
+@click.option(
+    "--format",
+    "-f",
+    type=click.Choice(["csv", "json", "xlsx"]),
+    default="csv",
+    help="Export format",
+)
+def geo_interest(
+    query: str,
+    region: Optional[str],
+    resolution: str,
+    timeframe: str,
+    category: str,
+    count: int,
+    export: bool,
+    export_path: Optional[str],
+    format: str,
+):
     """Show interest by geographic region for a query."""
     try:
         client = TrendsClient()
@@ -471,7 +602,7 @@ def geo_interest(query: str, region: Optional[str], resolution: str, timeframe: 
             region=region_code,
             timeframe=timeframe_parsed,
             category=category,
-            resolution=resolution
+            resolution=resolution,
         )
 
         # Display results
@@ -486,14 +617,15 @@ def geo_interest(query: str, region: Optional[str], resolution: str, timeframe: 
         format_interest_by_region(
             interest_df,
             title=f"Geographic Interest for '{query}' - {region_name} ({resolution})",
-            count=count
+            count=count,
         )
 
         # Export if requested
         if export:
             export_dir = validate_export_path(export_path)
-            export_file = export_dir / \
-                f"geo_interest_{query}_{region_display}_{resolution}.{format}"
+            export_file = (
+                export_dir / f"geo_interest_{query}_{region_display}_{resolution}.{format}"
+            )
             export_to_file(interest_df, export_file, format)
 
     except Exception as e:
@@ -523,8 +655,8 @@ def categories(find: Optional[str]):
         table.add_column("ID", style="dim")
         table.add_column("Category", style="green")
 
-        for category in sorted(categories, key=lambda x: x['id']):
-            table.add_row(category['id'], category['name'])
+        for category in sorted(categories, key=lambda x: x["id"]):
+            table.add_row(category["id"], category["name"])
 
         console.print(table)
 
@@ -555,8 +687,8 @@ def geo(search_term: str):
         table.add_column("Code", style="dim")
         table.add_column("Location", style="green")
 
-        for location in sorted(locations, key=lambda x: x['id']):
-            table.add_row(location['id'], location['name'])
+        for location in sorted(locations, key=lambda x: x["id"]):
+            table.add_row(location["id"], location["name"])
 
         console.print(table)
 
