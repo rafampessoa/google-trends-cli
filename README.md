@@ -31,7 +31,7 @@ A powerful command-line tool for fetching and analyzing Google Trends data, with
 
 ```bash
 # From PyPI
-pip install gtrends
+pip install gtrends-cli
 
 # From source
 git clone https://github.com/Nao-30/google-trends-cli
