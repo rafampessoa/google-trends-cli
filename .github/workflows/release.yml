@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (major, minor, patch)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+      manual_version:
+        description: 'Manual version override (leave empty to auto-calculate)'
+        required: false
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bumpversion
+          pip install -e .
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Get current version
+        id: current
+        run: |
+          CURRENT_VERSION=$(grep -Po "__version__ = '\K[^']*" gtrends/__init__.py)
+          echo "Current version: $CURRENT_VERSION"
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Calculate next version
+        id: next
+        run: |
+          CURRENT_VERSION=${{ steps.current.outputs.current_version }}
+          
+          # Use manual version if provided
+          if [ ! -z "${{ github.event.inputs.manual_version }}" ]; then
+            NEXT_VERSION="${{ github.event.inputs.manual_version }}"
+          else
+            # Parse current version
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+            
+            # Increment based on release type
+            case "${{ github.event.inputs.release_type }}" in
+              major)
+                NEXT_VERSION="$((MAJOR + 1)).0.0"
+                ;;
+              minor)
+                NEXT_VERSION="$MAJOR.$((MINOR + 1)).0"
+                ;;
+              patch)
+                NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+                ;;
+            esac
+          fi
+          
+          echo "Next version: $NEXT_VERSION"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version number
+        run: |
+          # Update version in __init__.py
+          sed -i "s/__version__ = '${{ steps.current.outputs.current_version }}'/__version__ = '${{ steps.next.outputs.next_version }}'/" gtrends/__init__.py
+          
+          # Update version in setup.py
+          sed -i "s/version=\"${{ steps.current.outputs.current_version }}\"/version=\"${{ steps.next.outputs.next_version }}\"/" setup.py
+
+      - name: Update Changelog
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          # Prepare new changelog entry
+          NEW_ENTRY="## [${{ steps.next.outputs.next_version }}] - $DATE\n\n### Added\n- \n\n### Changed\n- \n\n### Fixed\n- \n"
+          
+          # Insert new entry after the header
+          sed -i "/^# Changelog/a\\\\n$NEW_ENTRY" CHANGELOG.md
+          
+          # If this is the first release, we need to create the file
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo -e "# Changelog\n\nAll notable changes to the Google Trends CLI project will be documented in this file.\n\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),\nand this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\n\n$NEW_ENTRY" > CHANGELOG.md
+          fi
+          
+          echo "::notice::Updated CHANGELOG.md with new version entry"
+          cat CHANGELOG.md
+
+      - name: Create Release Branch
+        run: |
+          RELEASE_BRANCH="release/v${{ steps.next.outputs.next_version }}"
+          git checkout -b $RELEASE_BRANCH
+          
+          git add gtrends/__init__.py setup.py CHANGELOG.md
+          git commit -m "Bump version to ${{ steps.next.outputs.next_version }} and update changelog"
+          git push -u origin $RELEASE_BRANCH
+          
+          echo "::notice::Created release branch $RELEASE_BRANCH"
+          
+          # Create pull request
+          gh pr create --base main --head $RELEASE_BRANCH \
+            --title "Release v${{ steps.next.outputs.next_version }}" \
+            --body "## Release v${{ steps.next.outputs.next_version }}
+
+          This PR prepares the release of version ${{ steps.next.outputs.next_version }}.
+
+          ### Before merging:
+          - [ ] Review and update the CHANGELOG.md
+          - [ ] Verify all tests pass
+          - [ ] Approve the PR
+
+          After merging, a GitHub release will automatically be created which will trigger PyPI publishing."
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
