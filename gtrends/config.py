@@ -37,8 +37,10 @@ REGION_CODES = {
 }
 
 # Time periods for showcases
+
+
 class BatchPeriod(str, Enum):
     Past4H = "custom_4h"
-    Past24H = "custom_1d" 
+    Past24H = "custom_1d"
     Past48H = "custom_2d"
     Past7D = "custom_7d"
