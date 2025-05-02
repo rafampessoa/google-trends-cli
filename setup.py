@@ -16,12 +16,12 @@ extras_require = {
 setup(
     name="gtrends-cli",
     version="0.1.1",
-    author="KitabTune",
-    author_email="info@kitabtune.com",
+    author="Mohammed A. Al-Kebsi",
+    author_email="mohammed.k@mohammed-al-kebsi.space",
     description="CLI tool for Google Trends data analysis and content suggestions",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/kitabtune/google-trends-cli",
+    url="https://github.com/Nao-30/google-trends-cli",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
