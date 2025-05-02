@@ -33,7 +33,7 @@ jobs:
           git tag -a v${{ steps.version.outputs.version }} -m "Release v${{ steps.version.outputs.version }}"
           git push origin v${{ steps.version.outputs.version }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Extract release notes from CHANGELOG.md
         id: extract_release_notes
@@ -57,4 +57,4 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
