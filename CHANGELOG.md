@@ -23,4 +23,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First public release
 
 ### Fixed
-- Initial stable implementation
+- Initial stable implementation.
