@@ -34,7 +34,7 @@ A powerful command-line tool for fetching and analyzing Google Trends data, with
 pip install gtrends
 
 # From source
-git clone https://github.com/kitabtune/google-trends-cli
+git clone https://github.com/Nao-30/google-trends-cli
 cd google-trends-cli
 pip install -e .
 ```
@@ -225,4 +225,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [TrendsPy](https://github.com/sdil87/trendspy) for Google Trends data access
 - [Click](https://click.palletsprojects.com/) for the command-line interface
 - [Rich](https://github.com/Textualize/rich) for beautiful terminal output
-- [KitabTune](https://kitabtune.com) for project sponsorship
+- [NSL](https://blog.mohammed-al-kebsi.space) for project sponsorship
