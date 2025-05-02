@@ -14,7 +14,8 @@ class TestTrendsClient:
     @patch("gtrends.trends_api.requests.Session")
     def test_init(self, mock_session, mock_trends):
         """Test client initialization."""
-        # client = TrendsClient()
+        client = TrendsClient()
+        print(client)
         assert mock_trends.called
         assert mock_session.called
 
