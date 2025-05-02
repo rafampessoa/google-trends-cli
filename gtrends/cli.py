@@ -1,20 +1,15 @@
 """Command-line interface for Google Trends tool."""
 
 import sys
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional
 
 import click
-import pandas as pd
 from rich.console import Console
 
 from gtrends.config import (
-    CONTENT_CATEGORIES,
     DEFAULT_CATEGORY,
-    DEFAULT_REGION,
     DEFAULT_SUGGESTIONS_COUNT,
     DEFAULT_TIMEFRAME,
-    REGION_CODES,
     BatchPeriod,
 )
 from gtrends.content_suggestions import ContentSuggester
@@ -40,7 +35,7 @@ console = Console()
 @click.group()
 @click.version_option(version="0.0.1")
 def cli():
-    """Google Trends CLI - Fetch trending topics and analyze search interests for content creators."""
+    """Google Trends CLI - Fetch trending topics & analyze search interests for content creators."""
     pass
 
 
@@ -333,7 +328,7 @@ def compare(
 
         if len(topics) > 5:
             console.print(
-                "[bold yellow]Warning:[/bold yellow] Google Trends supports comparing max 5 topics. Using first 5."
+                "[bold yellow]Warning:[/bold yellow] Google Trends supports comparing max 5 topics."
             )
             topics = topics[:5]
 

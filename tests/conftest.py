@@ -1,6 +1,5 @@
 """Pytest configuration and shared fixtures."""
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pandas as pd

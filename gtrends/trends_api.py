@@ -1,12 +1,10 @@
 """Core module for fetching Google Trends data using TrendsPy."""
 
 import time
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 import requests
-from dateutil.relativedelta import relativedelta
 from trendspy import BatchPeriod, Trends
 
 from gtrends.config import DEFAULT_CATEGORY, DEFAULT_REGION, DEFAULT_TIMEFRAME

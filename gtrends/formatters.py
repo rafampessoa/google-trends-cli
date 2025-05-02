@@ -2,9 +2,8 @@
 
 import json
 import os
-import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Union
 
 import pandas as pd
 from rich.box import ROUNDED
@@ -12,7 +11,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-from rich.text import Text
 
 console = Console()
 
@@ -21,7 +19,7 @@ def is_bat_available() -> bool:
     """Check if 'bat' is available in the system."""
     try:
         return os.system("which bat > /dev/null 2>&1") == 0
-    except:
+    except Exception:
         return False
 
 
@@ -234,7 +232,7 @@ def format_interest_over_time(
 
         except ImportError:
             console.print(
-                "[yellow]Matplotlib is required for visualizations. Install with 'pip install matplotlib'.[/yellow]"
+                "Matplotlib is required for visualizations. Install with 'pip install matplotlib'."
             )
         except Exception as e:
             console.print(f"[red]Error creating visualization: {str(e)}[/red]")

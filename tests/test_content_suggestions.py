@@ -1,9 +1,8 @@
 """Tests for ContentSuggester."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
-import pytest
 
 from gtrends.content_suggestions import ContentSuggester
 

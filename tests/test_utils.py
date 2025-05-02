@@ -1,9 +1,7 @@
 """Tests for utility functions."""
 
-from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 
 from gtrends.utils import (
     determine_locale,

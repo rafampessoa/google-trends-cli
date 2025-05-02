@@ -2,10 +2,9 @@
 
 import locale
 import os
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from gtrends.config import DEFAULT_EXPORT_PATH, DEFAULT_TIMEFRAME
 
