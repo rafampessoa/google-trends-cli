@@ -14,7 +14,7 @@ extras_require = {
 }
 
 setup(
-    name="gtrends",
+    name="gtrends-cli",
     version="0.1.0",
     author="KitabTune",
     author_email="info@kitabtune.com",
