@@ -6,6 +6,7 @@ from typing import Optional
 import click
 from rich.console import Console
 
+from gtrends import __version__
 from gtrends.config import (
     DEFAULT_CATEGORY,
     DEFAULT_SUGGESTIONS_COUNT,
@@ -28,8 +29,6 @@ from gtrends.utils import (
     validate_export_path,
     validate_region_code,
 )
-
-from gtrends import __version__
 
 console = Console()
 
