@@ -330,3 +330,25 @@ def validate_export_path(export_path: Union[str, Path, None] = None) -> Path:
         )
 
     return export_path
+
+
+def validate_topic_query(query: Any) -> str:
+    """Validate a topic query string.
+
+    Args:
+        query: Topic query to validate
+
+    Returns:
+        Validated query string
+
+    Raises:
+        InvalidParameterException: If query is invalid
+    """
+    if not query or not isinstance(query, str):
+        raise InvalidParameterException("Query must be a non-empty string", param_name="query")
+    
+    query = query.strip()
+    if not query:
+        raise InvalidParameterException("Query cannot be empty", param_name="query")
+    
+    return query

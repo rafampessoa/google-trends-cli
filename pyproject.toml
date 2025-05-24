@@ -31,6 +31,10 @@ Documentation = "https://github.com/Nao-30/google-trends-cli/tree/main/docs"
 Repository = "https://github.com/Nao-30/google-trends-cli.git"
 Issues = "https://github.com/Nao-30/google-trends-cli/issues"
 
+[project.scripts]
+gtrends = "gtrends_cli.main:cli"
+gtrends-api = "gtrends_api.main:start_api"
+
 [tool.black]
 line-length = 100
 target-version = ['py38']
