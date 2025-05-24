@@ -70,7 +70,7 @@ setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=install_requires,
     entry_points={
         "console_scripts": ["gtrends=gtrends_cli.main:cli", "gtrends-api=gtrends_api.main:start"],
