@@ -26,7 +26,7 @@ jobs:
         pip install -e ".[dev]"
     - name: Run tests
       run: |
-        pytest --cov=gtrends tests/
+        pytest --cov=src tests/
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
