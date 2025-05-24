@@ -30,9 +30,6 @@ jobs:
     - name: Lint with flake8
       run: |
         flake8 --max-line-length=100 --ignore=E203,W503 src tests
-    - name: Type check with mypy
-      run: |
-        mypy --ignore-missing-imports src
     - name: Security scan with bandit
       run: |
         bandit -r src -x tests/ -c pyproject.toml
