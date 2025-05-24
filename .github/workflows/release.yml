@@ -52,31 +52,39 @@ jobs:
       - name: Get current version
         id: current
         run: |
-          # Check pyproject.toml first (modern approach)
+          CURRENT_VERSION=""
+          
+          # Check pyproject.toml first (preferred)
           if [ -f "pyproject.toml" ]; then
-            CURRENT_VERSION=$(grep -Po 'version\s*=\s*"\K[^"]*' pyproject.toml || echo "0.0.0")
-            echo "Current version from pyproject.toml: $CURRENT_VERSION"
-          # Check setup.py next
-          elif [ -f "setup.py" ]; then
-            CURRENT_VERSION=$(grep -Po 'version\s*=\s*"\K[^"]*' setup.py || echo "0.0.0")
-            echo "Current version from setup.py: $CURRENT_VERSION"
-          # Check setup.cfg next
-          elif [ -f "setup.cfg" ]; then
-            CURRENT_VERSION=$(grep -Po "version\s*=\s*\K[^\"']*" setup.cfg || echo "0.0.0")
-            echo "Current version from setup.cfg: $CURRENT_VERSION"
-          # Finally, check if any modules have __init__.py with version
-          elif [ -d "src" ]; then
-            for init_file in $(find src -name "__init__.py"); do
-              if grep -q "__version__" "$init_file"; then
-                CURRENT_VERSION=$(grep -Po "__version__\s*=\s*[\"']\K[^\"']*" "$init_file" || echo "0.0.0")
-                echo "Current version from $init_file: $CURRENT_VERSION"
-                break
-              fi
-            done
-          else
-            echo "::warning::Could not find version files. Using default 0.0.0"
+            CURRENT_VERSION=$(grep -Po 'version\s*=\s*"\K[^"]*' pyproject.toml 2>/dev/null || echo "")
+            if [ ! -z "$CURRENT_VERSION" ]; then
+              echo "Current version from pyproject.toml: $CURRENT_VERSION"
+            fi
+          fi
+          
+          # Check __init__.py if pyproject.toml didn't have version
+          if [ -z "$CURRENT_VERSION" ] && [ -f "src/gtrends_core/__init__.py" ]; then
+            CURRENT_VERSION=$(grep -Po '__version__\s*=\s*"\K[^"]*' src/gtrends_core/__init__.py 2>/dev/null || echo "")
+            if [ ! -z "$CURRENT_VERSION" ]; then
+              echo "Current version from src/gtrends_core/__init__.py: $CURRENT_VERSION"
+            fi
+          fi
+          
+          # Check setup.py if others didn't have version
+          if [ -z "$CURRENT_VERSION" ] && [ -f "setup.py" ]; then
+            CURRENT_VERSION=$(grep -Po 'version\s*=\s*"\K[^"]*' setup.py 2>/dev/null || echo "")
+            if [ ! -z "$CURRENT_VERSION" ]; then
+              echo "Current version from setup.py: $CURRENT_VERSION"
+            fi
+          fi
+          
+          # Fallback to 0.0.0 if no version found
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "::warning::Could not find version in any files. Using default 0.0.0"
             CURRENT_VERSION="0.0.0"
           fi
+          
+          echo "Final current version: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           
       - name: Calculate next version
@@ -110,23 +118,18 @@ jobs:
           
       - name: Update version number
         run: |
-          CURRENT_VERSION=${{ steps.current.outputs.current_version }}
-          NEXT_VERSION=${{ steps.next.outputs.next_version }}
+          CURRENT_VERSION="${{ steps.current.outputs.current_version }}"
+          NEXT_VERSION="${{ steps.next.outputs.next_version }}"
           
           echo "Updating version from $CURRENT_VERSION to $NEXT_VERSION"
           
           # Update version in setup.py
           if [ -f "setup.py" ]; then
-            if grep -q "version=\"$CURRENT_VERSION\"," setup.py; then
-              sed -i "s/version=\"$CURRENT_VERSION\",/__version__ = \"$NEXT_VERSION\"/g" setup.py
-              echo "Updated version in setup.py"
+            if grep -q "version=\"$CURRENT_VERSION\"" setup.py; then
+              sed -i "s/version=\"$CURRENT_VERSION\"/version=\"$NEXT_VERSION\"/" setup.py
+              echo "✓ Updated version in setup.py"
             else
-              echo "::warning::Pattern 'version=\"$CURRENT_VERSION\",' not found in setup.py"
-              # Fallback to generic version update
-              if grep -q "version=" setup.py; then
-                sed -i "s/version=[\"'][^\"']*[\"']/version=\"$NEXT_VERSION\"/" setup.py
-                echo "Updated version in setup.py using fallback pattern"
-              fi
+              echo "::warning::Could not find version=\"$CURRENT_VERSION\" in setup.py"
             fi
           else
             echo "::notice::setup.py file not found"
@@ -135,15 +138,10 @@ jobs:
           # Update version in src/gtrends_core/__init__.py
           if [ -f "src/gtrends_core/__init__.py" ]; then
             if grep -q "__version__ = \"$CURRENT_VERSION\"" src/gtrends_core/__init__.py; then
-              sed -i "s/__version__ = \"$CURRENT_VERSION\"/__version__ = \"$NEXT_VERSION\"/g" src/gtrends_core/__init__.py
-              echo "Updated version in src/gtrends_core/__init__.py"
+              sed -i "s/__version__ = \"$CURRENT_VERSION\"/__version__ = \"$NEXT_VERSION\"/" src/gtrends_core/__init__.py
+              echo "✓ Updated version in src/gtrends_core/__init__.py"
             else
-              echo "::warning::Pattern '__version__ = \"$CURRENT_VERSION\"' not found in src/gtrends_core/__init__.py"
-              # Fallback to generic version update
-              if grep -q "__version__" src/gtrends_core/__init__.py; then
-                sed -i "s/__version__\s*=\s*[\"'][^\"']*[\"']/__version__ = \"$NEXT_VERSION\"/g" src/gtrends_core/__init__.py
-                echo "Updated version in src/gtrends_core/__init__.py using fallback pattern"
-              fi
+              echo "::warning::Could not find __version__ = \"$CURRENT_VERSION\" in src/gtrends_core/__init__.py"
             fi
           else
             echo "::notice::src/gtrends_core/__init__.py file not found"
@@ -151,83 +149,41 @@ jobs:
           
           # Update version in pyproject.toml
           if [ -f "pyproject.toml" ]; then
-            # Update version field
+            # Update the version field
             if grep -q "version = \"$CURRENT_VERSION\"" pyproject.toml; then
-              sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEXT_VERSION\"/g" pyproject.toml
-              echo "Updated version field in pyproject.toml"
+              sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEXT_VERSION\"/" pyproject.toml
+              echo "✓ Updated version field in pyproject.toml"
             else
-              echo "::warning::Pattern 'version = \"$CURRENT_VERSION\"' not found in pyproject.toml"
-              # Fallback to generic version update
-              if grep -q "version\s*=" pyproject.toml; then
-                sed -i "s/version\s*=\s*\"[^\"]*\"/version = \"$NEXT_VERSION\"/g" pyproject.toml
-                echo "Updated version in pyproject.toml using fallback pattern"
-              fi
+              echo "::warning::Could not find version = \"$CURRENT_VERSION\" in pyproject.toml"
             fi
             
-            # Update Download Link
+            # Update the Download Link
             if grep -q "\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$CURRENT_VERSION.tar.gz\"" pyproject.toml; then
-              sed -i "s|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$CURRENT_VERSION.tar.gz\"|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$NEXT_VERSION.tar.gz\"|g" pyproject.toml
-              echo "Updated Download Link in pyproject.toml"
+              sed -i "s|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$CURRENT_VERSION.tar.gz\"|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$NEXT_VERSION.tar.gz\"|" pyproject.toml
+              echo "✓ Updated Download Link in pyproject.toml"
             else
-              echo "::warning::Download Link pattern not found in pyproject.toml"
-              # Try to update any download link with the old version
-              if grep -q "google-trends-cli/archive/refs/tags/v$CURRENT_VERSION" pyproject.toml; then
-                sed -i "s|google-trends-cli/archive/refs/tags/v$CURRENT_VERSION|google-trends-cli/archive/refs/tags/v$NEXT_VERSION|g" pyproject.toml
-                echo "Updated Download Link in pyproject.toml using fallback pattern"
-              fi
+              echo "::warning::Could not find Download Link with version v$CURRENT_VERSION in pyproject.toml"
             fi
           else
             echo "::notice::pyproject.toml file not found"
           fi
           
-          # Update version in setup.cfg if it exists
-          if [ -f "setup.cfg" ]; then
-            if grep -q "version\s*=" setup.cfg; then
-              sed -i "s/version\s*=\s*[0-9.]*/version = $NEXT_VERSION/" setup.cfg
-              echo "Updated version in setup.cfg"
-            fi
-          fi
-          
-          # Update version in any other __init__.py files that contain __version__
-          if [ -d "src" ]; then
-            for init_file in $(find src -name "__init__.py"); do
-              if [ "$init_file" != "src/gtrends_core/__init__.py" ] && grep -q "__version__" "$init_file"; then
-                if grep -q "__version__ = '" "$init_file"; then
-                  # Single quote format
-                  sed -i "s/__version__ = '[^']*'/__version__ = '$NEXT_VERSION'/" "$init_file"
-                elif grep -q '__version__ = "' "$init_file"; then
-                  # Double quote format
-                  sed -i 's/__version__ = "[^"]*"/__version__ = "'$NEXT_VERSION'"/' "$init_file"
-                else
-                  # Generic replacement
-                  sed -i "s/__version__\s*=\s*[\"'][^\"']*[\"']/__version__ = '$NEXT_VERSION'/" "$init_file"
-                fi
-                echo "Updated version in $init_file"
-              fi
-            done
-          fi
-          
           # Debug - verify files were updated
-          echo "=== Updated files content ==="
+          echo ""
+          echo "=== VERIFICATION ==="
           if [ -f "setup.py" ]; then
-            echo "setup.py content:"
-            cat setup.py
-            echo "---"
+            echo "setup.py version line:"
+            grep -n "version=" setup.py || echo "No version= found"
           fi
           if [ -f "src/gtrends_core/__init__.py" ]; then
-            echo "src/gtrends_core/__init__.py content:"
-            cat src/gtrends_core/__init__.py
-            echo "---"
+            echo "src/gtrends_core/__init__.py version line:"
+            grep -n "__version__" src/gtrends_core/__init__.py || echo "No __version__ found"
           fi
           if [ -f "pyproject.toml" ]; then
-            echo "pyproject.toml content:"
-            cat pyproject.toml
-            echo "---"
-          fi
-          if [ -f "setup.cfg" ]; then
-            echo "setup.cfg content:"
-            cat setup.cfg
-            echo "---"
+            echo "pyproject.toml version line:"
+            grep -n "version = " pyproject.toml || echo "No version = found"
+            echo "pyproject.toml Download Link:"
+            grep -n "Download Link" pyproject.toml || echo "No Download Link found"
           fi
           
       - name: Update Changelog
@@ -281,8 +237,8 @@ jobs:
           # Create new branch
           git checkout -b $RELEASE_BRANCH
           
-          # Stage all changes - include all the files we potentially modified
-          git add -A
+          # Stage all changes
+          git add setup.py src/gtrends_core/__init__.py pyproject.toml CHANGELOG.md
           
           # Debug git status
           echo "Git status after adding files:"
@@ -305,6 +261,11 @@ jobs:
               --title "Release v${{ steps.next.outputs.next_version }}" \
               --body "## Release v${{ steps.next.outputs.next_version }}
             This PR prepares the release of version ${{ steps.next.outputs.next_version }}.
+            ### Files Updated:
+            - setup.py
+            - src/gtrends_core/__init__.py  
+            - pyproject.toml (version and Download Link)
+            - CHANGELOG.md
             ### Before merging:
             - [ ] Review and update the CHANGELOG.md
             - [ ] Verify all tests pass
