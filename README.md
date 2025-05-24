@@ -29,10 +29,38 @@ A powerful tool for fetching and analyzing Google Trends data, available as both
 - 📁 **Multiple Export Formats**: Save data as CSV, JSON, or Excel files with enhanced JSON structure
 - 🖼️ **Visual Reporting**: Generate high-quality trend visualizations with matplotlib
 - 🌐 **HTTP API**: Access all functionality via a RESTful API
+- 🔄 **Environment Configuration**: Easily configure for development, testing, or production
+- 🐳 **Docker Support**: Deploy as containerized services with health checks and security
+- 🧪 **Comprehensive Testing**: Extensive unit and integration test coverage
+- 🛡️ **Quality Assurance**: Built-in tooling for code quality and security checks
+
+## 🧠 Architecture
+
+The project follows a modern service-oriented architecture with clear separation of concerns:
+
+```
+google-trends-cli/
+├── src/
+│   ├── gtrends_core/        # Core business logic library
+│   ├── gtrends_cli/         # CLI presentation layer
+│   └── gtrends_api/         # HTTP API layer
+├── tests/
+│   ├── unit/                # Unit tests
+│   └── integration/         # Integration tests
+├── config/                  # Environment configurations
+├── docker/                  # Docker configuration
+└── scripts/                 # Utility scripts
+```
+
+This architecture enables:
+- **Independent Development**: Core logic can be tested and developed separately
+- **Multiple Interfaces**: CLI and API layers share the same core logic
+- **Easy Extension**: Add new interfaces without modifying business logic
+- **Robust Testing**: Comprehensive test coverage across all layers
 
 ## 🌐 API Access
 
-All functionality is now available through an HTTP API, making it easy to integrate Google Trends data into your applications:
+All functionality is available through an HTTP API, making it easy to integrate Google Trends data into your applications:
 
 ```bash
 # Start the API server
@@ -45,13 +73,15 @@ gtrends-api
 
 | Endpoint | Description |
 |----------|-------------|
-| `/api/trending` | Get trending searches |
-| `/api/related` | Find related topics and queries |
-| `/api/compare` | Compare interest across topics |
-| `/api/suggestions` | Get content creation suggestions |
-| `/api/opportunities` | Find writing opportunities |
-| `/api/growth` | Track growth for multiple topics |
-| `/api/geo` | Analyze geographic distribution |
+| `/api/v1/trending` | Get trending searches |
+| `/api/v1/related/topics` | Find related topics |
+| `/api/v1/related/queries` | Find related queries |
+| `/api/v1/comparison` | Compare interest across topics |
+| `/api/v1/suggestions` | Get content creation suggestions |
+| `/api/v1/opportunities` | Find writing opportunities |
+| `/api/v1/growth` | Track growth for multiple topics |
+| `/api/v1/geo` | Analyze geographic distribution |
+| `/api/v1/health` | API health check |
 | `/api/docs` | Interactive API documentation |
 
 For detailed API documentation, visit the `/api/docs` endpoint when the server is running.
@@ -66,6 +96,9 @@ pip install gtrends-cli
 
 # Installation with API support
 pip install "gtrends-cli[api]"
+
+# Installation with all dependencies (API + production + development)
+pip install "gtrends-cli[all]"
 ```
 
 ### Using the Setup Script
@@ -80,17 +113,8 @@ cd google-trends-cli
 # Make the script executable
 chmod +x scripts/setup.sh
 
-# Install CLI only
+# Run the setup script (development environment)
 ./scripts/setup.sh
-
-# Install with API support
-./scripts/setup.sh --api
-
-# Install with all dependencies (API + development)
-./scripts/setup.sh --all
-
-# Install in development mode
-./scripts/setup.sh --dev
 ```
 
 ### From Source
@@ -109,6 +133,9 @@ pip install ".[api]"
 # With development dependencies
 pip install ".[dev]"
 
+# With production dependencies
+pip install ".[prod]"
+
 # With all dependencies
 pip install ".[all]"
 ```
@@ -116,14 +143,55 @@ pip install ".[all]"
 ### Docker
 
 ```bash
-# Pull the image
-docker pull nao30/gtrends-api:latest
+# Using docker-compose (recommended)
+cd google-trends-cli/docker
+docker-compose up -d
 
-# Run the API server
+# Or pull and run the API image directly
+docker pull nao30/gtrends-api:latest
 docker run -p 8000:8000 nao30/gtrends-api:latest
 ```
 
 For more detailed installation instructions, see the [Installation Guide](docs/installation.md).
+
+## 🧪 Development and Testing
+
+The project includes comprehensive tools for development and testing:
+
+```bash
+# Setup development environment
+./scripts/setup.sh
+
+# Run all tests with coverage
+./scripts/test.sh
+
+# Run only unit tests
+./scripts/test.sh --unit-only
+
+# Run only integration tests
+./scripts/test.sh --integration-only
+
+# Run only linting checks
+./scripts/test.sh --lint-only
+
+# Deploy to production (requires configuration)
+./scripts/deploy.sh --target=docker --env=production
+```
+
+## 🔧 Configuration
+
+The project supports multiple environment configurations:
+
+```bash
+# Set environment (development, testing, production, docker)
+export GTRENDS_ENV=development
+
+# Configuration files are in the config/ directory:
+# - development.yml: Development settings
+# - testing.yml: Test settings
+# - production.yml: Production settings
+# - docker.yml: Docker deployment settings
+```
 
 ## 💻 Quick Start
 
@@ -147,10 +215,11 @@ gtrends writing-opportunities
 gtrends trending
 
 # Show trending searches with news articles
-gtrends trending --with-news
+gtrends trending --with-articles
 
 # Show topics and queries related to a term
-gtrends related "book publishing"
+gtrends related topics "book publishing"
+gtrends related queries "book publishing"
 
 # Compare interest in multiple topics
 gtrends compare "fiction books" "non-fiction books" "poetry"
@@ -248,81 +317,18 @@ Hourly precision:    '2024-03-25T12 2024-03-25T15'
 All available data:  'all'
 ```
 
-## 📊 Example Outputs
+## 📈 Version History
 
+For a complete list of changes, see the [Changelog](CHANGELOG.md).
 
+- **0.3.0**: Comprehensive testing, Docker containerization, environment configuration, quality assurance
+- **0.2.0**: Service-oriented architecture, API access, enhanced visualization
+- **0.1.x**: Initial release with core functionality
 
+## 👥 Contributing
 
+Contributions are welcome! Please check the [Contributing Guide](CONTRIBUTING.md) for details.
 
-
-
-## 📑 Full Documentation
-
-For complete documentation on all commands and options:
-
-```bash
-# General help
-gtrends --help
-
-# Command-specific help
-gtrends [COMMAND] --help
-```
-
-## 🛠️ Requirements
-
-### Core Requirements
-- Python 3.8+
-- trendspy
-- click
-- pandas
-- rich
-- python-dateutil
-- matplotlib (optional, for visualizations)
-
-### API Requirements (optional)
-- fastapi
-- uvicorn
-- starlette
-
-### Development Requirements
-- pytest (for testing)
-- pytest-cov (for test coverage)
-- black (for code formatting)
-- isort (for import sorting)
-- flake8 (for linting)
-
-## 🧪 Development
-
-To set up the development environment:
-
-```bash
-# Clone the repository
-git clone https://github.com/Nao-30/google-trends-cli
-cd google-trends-cli
-
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Check test coverage
-pytest --cov=src tests/
-```
-
-Our test suite covers CLI commands, API functionality, content suggestions, formatting utilities, and helper functions. We welcome contributions to expand test coverage.
-
-## 🤝 Contributing
-
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## ⚖️ License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 💖 Acknowledgements
-
-- [TrendsPy](https://github.com/sdil87/trendspy) for Google Trends data access
-- [Click](https://click.palletsprojects.com/) for the command-line interface
-- [Rich](https://github.com/Textualize/rich) for beautiful terminal output
-- [NSL](https://blog.mohammed-al-kebsi.space) for project sponsorship
