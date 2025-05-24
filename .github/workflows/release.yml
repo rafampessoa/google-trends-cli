@@ -125,11 +125,14 @@ jobs:
           
           # Update version in setup.py
           if [ -f "setup.py" ]; then
-            if grep -q "version=\"$CURRENT_VERSION\"" setup.py; then
-              sed -i "s/version=\"$CURRENT_VERSION\"/version=\"$NEXT_VERSION\"/" setup.py
+            echo "Checking setup.py for version=\"$CURRENT_VERSION\""
+            if grep -q "version=\"${CURRENT_VERSION}\"" setup.py; then
+              sed -i "s/version=\"${CURRENT_VERSION}\"/version=\"${NEXT_VERSION}\"/" setup.py
               echo "✓ Updated version in setup.py"
             else
               echo "::warning::Could not find version=\"$CURRENT_VERSION\" in setup.py"
+              echo "Current content of setup.py around version:"
+              grep -n "version=" setup.py || echo "No version= line found"
             fi
           else
             echo "::notice::setup.py file not found"
@@ -137,11 +140,14 @@ jobs:
           
           # Update version in src/gtrends_core/__init__.py
           if [ -f "src/gtrends_core/__init__.py" ]; then
-            if grep -q "__version__ = \"$CURRENT_VERSION\"" src/gtrends_core/__init__.py; then
-              sed -i "s/__version__ = \"$CURRENT_VERSION\"/__version__ = \"$NEXT_VERSION\"/" src/gtrends_core/__init__.py
+            echo "Checking src/gtrends_core/__init__.py for __version__ = \"$CURRENT_VERSION\""
+            if grep -q "__version__ = \"${CURRENT_VERSION}\"" src/gtrends_core/__init__.py; then
+              sed -i "s/__version__ = \"${CURRENT_VERSION}\"/__version__ = \"${NEXT_VERSION}\"/" src/gtrends_core/__init__.py
               echo "✓ Updated version in src/gtrends_core/__init__.py"
             else
               echo "::warning::Could not find __version__ = \"$CURRENT_VERSION\" in src/gtrends_core/__init__.py"
+              echo "Current content of src/gtrends_core/__init__.py around version:"
+              grep -n "__version__" src/gtrends_core/__init__.py || echo "No __version__ line found"
             fi
           else
             echo "::notice::src/gtrends_core/__init__.py file not found"
@@ -150,19 +156,25 @@ jobs:
           # Update version in pyproject.toml
           if [ -f "pyproject.toml" ]; then
             # Update the version field
-            if grep -q "version = \"$CURRENT_VERSION\"" pyproject.toml; then
-              sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEXT_VERSION\"/" pyproject.toml
+            echo "Checking pyproject.toml for version = \"$CURRENT_VERSION\""
+            if grep -q "version = \"${CURRENT_VERSION}\"" pyproject.toml; then
+              sed -i "s/version = \"${CURRENT_VERSION}\"/version = \"${NEXT_VERSION}\"/" pyproject.toml
               echo "✓ Updated version field in pyproject.toml"
             else
               echo "::warning::Could not find version = \"$CURRENT_VERSION\" in pyproject.toml"
+              echo "Current content of pyproject.toml around version:"
+              grep -n "version =" pyproject.toml || echo "No version = line found"
             fi
             
             # Update the Download Link
-            if grep -q "\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$CURRENT_VERSION.tar.gz\"" pyproject.toml; then
-              sed -i "s|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$CURRENT_VERSION.tar.gz\"|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v$NEXT_VERSION.tar.gz\"|" pyproject.toml
+            echo "Checking pyproject.toml for Download Link with v$CURRENT_VERSION"
+            if grep -q "\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v${CURRENT_VERSION}.tar.gz\"" pyproject.toml; then
+              sed -i "s|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v${CURRENT_VERSION}.tar.gz\"|\"Download Link\" = \"https://github.com/Nao-30/google-trends-cli/archive/refs/tags/v${NEXT_VERSION}.tar.gz\"|" pyproject.toml
               echo "✓ Updated Download Link in pyproject.toml"
             else
               echo "::warning::Could not find Download Link with version v$CURRENT_VERSION in pyproject.toml"
+              echo "Current Download Link content:"
+              grep -n "Download Link" pyproject.toml || echo "No Download Link found"
             fi
           else
             echo "::notice::pyproject.toml file not found"
