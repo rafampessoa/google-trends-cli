@@ -325,6 +325,24 @@ For a complete list of changes, see the [Changelog](CHANGELOG.md).
 - **0.2.0**: Service-oriented architecture, API access, enhanced visualization
 - **0.1.x**: Initial release with core functionality
 
+
+## 👥 Authors
+
+This project is brought to you by:
+
+- **[Mohammed A. Al-Kebsi](https://mohammed-al-kebsi.space)** ([@Nao-30](https://github.com/Nao-30))
+- **[Abdulrahman Mohammed](https://obad-dev.mohammed-al-kebsi.space/)** ([@Abdulrahman-YE](https://github.com/Abdulrahman-YE))
+
+
+## Top contributors:
+
+<a href="https://github.com/Nao-30/google-trends-cli/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Nao-30/google-trends-cli" alt="contrib.rocks image" />
+</a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 ## 👥 Contributing
 
 Contributions are welcome! Please check the [Contributing Guide](CONTRIBUTING.md) for details.
