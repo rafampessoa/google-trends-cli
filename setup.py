@@ -73,7 +73,8 @@ setup(
     python_requires=">=3.9",
     install_requires=install_requires,
     entry_points={
-        "console_scripts": ["gtrends=gtrends_cli.main:cli", "gtrends-api=gtrends_api.main:start_api"],
+        "console_scripts": ["gtrends=gtrends_cli.main:cli",
+                            "gtrends-api=gtrends_api.main:start_api"],
     },
     extras_require=extras_require,
     include_package_data=True,

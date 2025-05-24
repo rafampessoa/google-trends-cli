@@ -346,9 +346,9 @@ def validate_topic_query(query: Any) -> str:
     """
     if not query or not isinstance(query, str):
         raise InvalidParameterException("Query must be a non-empty string", param_name="query")
-    
+
     query = query.strip()
     if not query:
         raise InvalidParameterException("Query cannot be empty", param_name="query")
-    
+
     return query
