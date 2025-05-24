@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 
 
 ### Fixed
-- 
+- hot fixes of some typo in imports
 
 ## [0.3.2] - 2025-05-24
 
