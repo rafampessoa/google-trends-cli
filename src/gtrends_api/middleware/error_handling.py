@@ -1,7 +1,6 @@
 """Error handling middleware for the API."""
 
 import logging
-from typing import Any, Dict, Union
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -21,24 +20,22 @@ from gtrends_core.exceptions.trends_exceptions import (
 logger = logging.getLogger(__name__)
 
 
-async def trends_exception_handler(
-    request: Request, exc: TrendsException
-) -> JSONResponse:
+async def trends_exception_handler(request: Request, exc: TrendsException) -> JSONResponse:
     """Handle TrendsException and its subclasses.
-    
+
     Args:
         request: FastAPI request
         exc: Exception instance
-        
+
     Returns:
         JSONResponse with error details
     """
     # Log the error
     logger.error(f"TrendsException: {exc.message}")
-    
+
     # Set appropriate status code based on exception type
     status_code = status.HTTP_400_BAD_REQUEST
-    
+
     if isinstance(exc, ApiRequestException):
         status_code = status.HTTP_502_BAD_GATEWAY
     elif isinstance(exc, (RegionNotFoundException, CategoryNotFoundException)):
@@ -53,7 +50,7 @@ async def trends_exception_handler(
         status_code = status.HTTP_400_BAD_REQUEST
     elif isinstance(exc, ExportException):
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    
+
     # Return structured error response
     return JSONResponse(
         status_code=status_code,
@@ -63,17 +60,17 @@ async def trends_exception_handler(
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle generic exceptions.
-    
+
     Args:
         request: FastAPI request
         exc: Exception instance
-        
+
     Returns:
         JSONResponse with error details
     """
     # Log the error
     logger.exception(f"Unhandled exception: {str(exc)}")
-    
+
     # Return generic error response
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -87,7 +84,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 def add_exception_handlers(app: FastAPI) -> None:
     """Add all exception handlers to the FastAPI app.
-    
+
     Args:
         app: FastAPI application instance
     """
@@ -101,6 +98,6 @@ def add_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(InvalidParameterException, trends_exception_handler)
     app.add_exception_handler(TimeframeParseException, trends_exception_handler)
     app.add_exception_handler(ExportException, trends_exception_handler)
-    
+
     # Add handler for generic exceptions
-    app.add_exception_handler(Exception, generic_exception_handler) 
+    app.add_exception_handler(Exception, generic_exception_handler)

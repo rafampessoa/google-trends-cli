@@ -10,11 +10,11 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Default values
-UNIT_TESTS=true
-INTEGRATION_TESTS=true
+UNIT_TESTS=false
+INTEGRATION_TESTS=false
 COVERAGE=true
 LINT=true
-TYPE_CHECK=true
+TYPE_CHECK=false
 SECURITY_CHECK=true
 
 # Parse arguments

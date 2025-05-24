@@ -41,25 +41,23 @@ def trending_command(
     with_news: bool,
     export: bool,
     export_path: Optional[str],
-    format: str="json",
+    format: str = "json",
 ):
     """Show current trending searches on Google."""
     try:
         # Get the trends client
         client = get_trends_client()
-        
+
         # Create service instance with the client
         service = TrendingService(client)
-        
+
         # Validate region code if provided
         region_code = validate_region_code(region) if region else None
 
         # Fetch trending data
         if with_news:
             console.print("Fetching trending searches with news articles...", style="blue")
-            results = service.get_trending_searches_with_articles(
-                region=region_code, limit=count
-            )
+            results = service.get_trending_searches_with_articles(region=region_code, limit=count)
         else:
             console.print("Fetching trending searches...", style="blue")
             results = service.get_trending_searches(region=region_code, limit=count)
@@ -67,17 +65,17 @@ def trending_command(
         # Display results
         region_name = results.region_name
         console.print(f"\n[bold]Trending Searches - {region_name}[/bold]\n")
-        
+
         format_trending_searches(results, count=count)
 
         # Export if requested
         if export:
             export_path_obj = validate_export_path(export_path)
             export_file = export_path_obj / f"trending_searches_{results.region_code}.{format}"
-            
+
             export_data(results, export_file, format)
             console.print(f"\nResults exported to: {export_file}")
 
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {str(e)}")
-        raise 
+        raise

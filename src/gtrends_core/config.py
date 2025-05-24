@@ -5,7 +5,7 @@ import os
 import time
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Any, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 import requests
@@ -45,10 +45,11 @@ REGION_CODES: Dict[str, str] = {
     "global": "",  # Empty string for global
 }
 
+
 # Time periods for showcase charts
 class BatchPeriod(str, Enum):
     """Time periods for batch trend analysis."""
-    
+
     Past4H = "custom_4h"
     Past24H = "custom_1d"
     Past48H = "custom_2d"
@@ -61,14 +62,19 @@ API_MAX_RETRIES = 3
 API_RATE_LIMIT = 60  # requests per minute
 
 # CLI configuration
-CLI_DEFAULT_OUTPUT_FORMAT = "text" 
+CLI_DEFAULT_OUTPUT_FORMAT = "text"
 
 
 class TrendsClient:
     """Client for interacting with Google Trends API using TrendsPy."""
 
-    def __init__(self, hl: str = "en-US", tz: int = 360, timeout: int = API_DEFAULT_TIMEOUT, 
-                 retries: int = API_MAX_RETRIES):
+    def __init__(
+        self,
+        hl: str = "en-US",
+        tz: int = 360,
+        timeout: int = API_DEFAULT_TIMEOUT,
+        retries: int = API_MAX_RETRIES,
+    ):
         """Initialize the TrendsClient with language, timezone, and request settings.
 
         Args:
@@ -77,12 +83,7 @@ class TrendsClient:
             timeout: Request timeout in seconds
             retries: Number of request retries
         """
-        self.trends = trendspy.Trends(
-            hl=hl, 
-            tz=tz, 
-            timeout=timeout,
-            retries=retries
-        )
+        self.trends = trendspy.Trends(hl=hl, tz=tz, timeout=timeout, retries=retries)
         self._session = requests.Session()
         self._last_request_time = 0
 
@@ -146,15 +147,17 @@ class TrendsClient:
         """
         self._throttle_requests()
         regions = self.trends.geo()
-        
+
         # Convert to DataFrame with consistent columns
         data = []
         for region in regions:
-            data.append({
-                "code": region.get("country_code", ""),
-                "name": region.get("name", ""),
-            })
-            
+            data.append(
+                {
+                    "code": region.get("country_code", ""),
+                    "name": region.get("name", ""),
+                }
+            )
+
         return pd.DataFrame(data)
 
     def get_trending_searches(self, region: Optional[str] = None, limit: int = 20) -> pd.DataFrame:
@@ -205,16 +208,18 @@ class TrendsClient:
         """
         if geo is None:
             geo = self.get_current_region()
-            
+
         self._throttle_requests()
-        
+
         try:
             return self.trends.trending_now_by_rss(geo=geo)
         except Exception as e:
             logger.error(f"Error in trending_now_by_rss: {str(e)}")
             return []
 
-    def get_trending_searches_with_articles(self, region: Optional[str] = None, limit: int = 20) -> Tuple[pd.DataFrame, Dict]:
+    def get_trending_searches_with_articles(
+        self, region: Optional[str] = None, limit: int = 20
+    ) -> Tuple[pd.DataFrame, Dict]:
         """Get trending searches with associated news articles.
 
         Args:
@@ -228,7 +233,7 @@ class TrendsClient:
             region = self.get_current_region()
 
         self._throttle_requests()
-        
+
         try:
             # Get trending searches with news
             trending = self.trends.trending_now_by_rss(geo=region)
@@ -419,7 +424,7 @@ class TrendsClient:
         )
 
         return interest_df
-        
+
     def get_showcase_timeline(
         self, keywords: List[str], time_period: BatchPeriod = BatchPeriod.Past24H
     ) -> pd.DataFrame:
@@ -442,12 +447,9 @@ class TrendsClient:
 
 def get_trends_client() -> TrendsClient:
     """Get a configured TrendsClient instance.
-    
+
     Returns:
         TrendsClient: Configured client wrapper for TrendsPy
     """
-    client = TrendsClient(
-        timeout=API_DEFAULT_TIMEOUT,
-        retries=API_MAX_RETRIES
-    )
-    return client 
+    client = TrendsClient(timeout=API_DEFAULT_TIMEOUT, retries=API_MAX_RETRIES)
+    return client

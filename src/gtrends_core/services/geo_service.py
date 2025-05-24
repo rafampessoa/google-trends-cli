@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import pandas as pd
 import requests
@@ -10,7 +10,6 @@ import requests
 from gtrends_core.config import DEFAULT_REGION
 from gtrends_core.exceptions.trends_exceptions import InvalidParameterException
 from gtrends_core.utils.validators import validate_region_code
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class GeoService:
         self.client = trends_client
         self._session = requests.Session()
         self._last_request_time = 0
-        
+
     def _throttle_requests(self, min_interval: float = 1.0):
         """Prevent sending too many requests in a short time.
 
@@ -41,7 +40,7 @@ class GeoService:
             time.sleep(min_interval - time_since_last)
 
         self._last_request_time = time.time()
-    
+
     def get_current_region(self) -> str:
         """Determine the user's current region based on IP.
 
@@ -91,12 +90,12 @@ class GeoService:
                 region = self.client.get_current_region()
             except (AttributeError, Exception):
                 region = self.get_current_region()
-        
+
         if resolution not in ["COUNTRY", "REGION", "CITY", "DMA"]:
             raise InvalidParameterException(
                 f"Invalid resolution: {resolution}. Must be one of: COUNTRY, REGION, CITY, DMA"
             )
-        
+
         # Get interest by region data
         try:
             geo_data = self.client.get_interest_by_region(
@@ -106,27 +105,27 @@ class GeoService:
                 timeframe=timeframe,
                 category=category,
             )
-            
+
             # Process results
             if not geo_data.empty:
                 # Sort by value in descending order
                 geo_data = geo_data.sort_values(by="value", ascending=False).reset_index(drop=True)
-                
+
                 # Limit to the requested count
                 if len(geo_data) > count:
                     geo_data = geo_data.head(count)
-                
+
                 # Add percentile ranks
                 geo_data["percentile"] = self._calculate_percentiles(geo_data["value"])
-                
+
                 # Add interest category
                 geo_data["interest_level"] = geo_data["percentile"].apply(self._categorize_interest)
-                
+
                 return geo_data
-            
+
         except Exception as e:
             logger.error(f"Error getting interest by region: {e}")
-        
+
         # Return empty DataFrame if no results or error
         columns = ["geoName", "geoCode", "value", "percentile", "interest_level"]
         return pd.DataFrame(columns=columns)
@@ -143,19 +142,18 @@ class GeoService:
         try:
             # Get region codes
             geo_codes = self.client.get_region_codes()
-            
+
             # Filter based on search term
             if search_term and not geo_codes.empty:
                 search_lower = search_term.lower()
-                
+
                 # Search in country names and region codes (case-insensitive)
-                mask = (
-                    geo_codes["name"].str.lower().str.contains(search_lower) |
-                    geo_codes["code"].str.lower().str.contains(search_lower)
-                )
-                
+                mask = geo_codes["name"].str.lower().str.contains(search_lower) | geo_codes[
+                    "code"
+                ].str.lower().str.contains(search_lower)
+
                 geo_codes = geo_codes[mask].reset_index(drop=True)
-            
+
             return geo_codes
         except Exception as e:
             logger.error(f"Error getting geo codes: {e}")
@@ -195,4 +193,4 @@ class GeoService:
         elif percentile >= 20:
             return "Low Interest"
         else:
-            return "Very Low Interest" 
+            return "Very Low Interest"

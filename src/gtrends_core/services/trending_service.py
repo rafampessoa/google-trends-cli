@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 import requests
@@ -10,7 +10,7 @@ import requests
 from gtrends_core.config import DEFAULT_REGION
 from gtrends_core.exceptions.trends_exceptions import ApiRequestException, NoDataException
 from gtrends_core.models.base import NewsArticle, TrendingTopic
-from gtrends_core.models.trending import TrendingSearchResults, TrendList
+from gtrends_core.models.trending import TrendingSearchResults
 from gtrends_core.utils.helpers import format_region_name
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class TrendingService:
     """Service for fetching trending search data from Google Trends."""
-    
+
     def __init__(self, trends_client):
         """Initialize with a TrendsClient instance.
 
@@ -28,7 +28,7 @@ class TrendingService:
         self.client = trends_client
         self._session = requests.Session()
         self._last_request_time = 0
-        
+
     def _throttle_requests(self, min_interval: float = 1.0):
         """Prevent sending too many requests in a short time.
 
@@ -42,7 +42,7 @@ class TrendingService:
             time.sleep(min_interval - time_since_last)
 
         self._last_request_time = time.time()
-    
+
     def get_current_region(self) -> str:
         """Determine the user's current region based on IP.
 
@@ -59,17 +59,19 @@ class TrendingService:
             logger.warning(f"Failed to detect region: {str(e)}")
             return DEFAULT_REGION
 
-    def _convert_trending_results(self, trends_data: Union[List, pd.DataFrame]) -> List[TrendingTopic]:
+    def _convert_trending_results(
+        self, trends_data: Union[List, pd.DataFrame]
+    ) -> List[TrendingTopic]:
         """Convert trending data from API to TrendingTopic objects.
-        
+
         Args:
-            trends_data: Data from the API, either a list of TrendKeyword-like objects or a DataFrame
-            
+            trends_data:Data from the API, either a list of TrendKeyword-like objects or a DataFrame
+
         Returns:
             List of TrendingTopic objects
         """
         topics = []
-        
+
         # If it's a DataFrame, convert it to our model
         if isinstance(trends_data, pd.DataFrame):
             for i, row in trends_data.iterrows():
@@ -77,10 +79,16 @@ class TrendingService:
                 topic = TrendingTopic(
                     keyword=row["title"],
                     rank=row.get("rank", i + 1),
-                    volume=row.get("volume") if "volume" in row else (
-                        int(row["traffic"].replace("+", "").replace(",", "")) 
-                        if isinstance(row.get("traffic"), str) and row.get("traffic") and any(c.isdigit() for c in row.get("traffic", ""))
-                        else None
+                    volume=(
+                        row.get("volume")
+                        if "volume" in row
+                        else (
+                            int(row["traffic"].replace("+", "").replace(",", ""))
+                            if isinstance(row.get("traffic"), str)
+                            and row.get("traffic")
+                            and any(c.isdigit() for c in row.get("traffic", ""))
+                            else None
+                        )
                     ),
                     volume_growth_pct=row.get("volume_growth_pct"),
                     geo=row.get("geo"),
@@ -89,7 +97,7 @@ class TrendingService:
                     news_tokens=row.get("news_tokens", []),
                 )
                 topics.append(topic)
-        
+
         # If it's a list of objects, check if they look like TrendKeyword instances
         elif isinstance(trends_data, list) and trends_data:
             for i, item in enumerate(trends_data):
@@ -97,7 +105,7 @@ class TrendingService:
                 if isinstance(item, TrendingTopic):
                     topics.append(item)
                     continue
-                
+
                 # Check if it looks like a TrendKeyword or TrendKeywordLite
                 if hasattr(item, "keyword"):
                     # Create a TrendingTopic from the attributes of the TrendKeyword object
@@ -117,7 +125,7 @@ class TrendingService:
                                     "snippet": getattr(article, "snippet", None),
                                 }
                             news_articles.append(NewsArticle.from_api(article_dict))
-                    
+
                     # Create the TrendingTopic with appropriate attribute mapping
                     topic = TrendingTopic(
                         keyword=item.keyword,
@@ -131,13 +139,15 @@ class TrendingService:
                         topics=getattr(item, "topics", []),
                         news_tokens=getattr(item, "news_tokens", []),
                         normalized_keyword=getattr(item, "normalized_keyword", None),
-                        news=news_articles
+                        news=news_articles,
                     )
                     topics.append(topic)
-        
+
         return topics
-            
-    def get_trending_searches(self, region: Optional[str] = None, limit: int = 20) -> TrendingSearchResults:
+
+    def get_trending_searches(
+        self, region: Optional[str] = None, limit: int = 20
+    ) -> TrendingSearchResults:
         """Get real-time trending searches.
 
         Args:
@@ -146,7 +156,7 @@ class TrendingService:
 
         Returns:
             TrendingSearchResults object with trending search data
-            
+
         Raises:
             ApiRequestException: If API request fails
             NoDataException: If no data is available
@@ -157,7 +167,7 @@ class TrendingService:
 
             # Try to get trending searches using the newer format first
             try:
-                # This will attempt to use the client's trending_now method which returns TrendKeyword objects
+                # This will attempt to use the trending_now method which return TrendKeyword objects
                 trending_data = self.client.trends.trending_now(geo=region)
                 topics = self._convert_trending_results(trending_data[:limit])
             except (AttributeError, Exception) as e:
@@ -166,7 +176,7 @@ class TrendingService:
                 print(f"Falling back to legacy trending method: {str(e)}")
                 trending_df = self.client.get_trending_searches(region=region)
                 topics = self._convert_trending_results(trending_df.head(limit))
-            
+
             if not topics:
                 raise NoDataException(f"No trending data available for region {region}")
 
@@ -176,7 +186,7 @@ class TrendingService:
                 region_code=region,
                 region_name=region_name,
             )
-            
+
         except NoDataException:
             raise
         except Exception as e:
@@ -194,7 +204,7 @@ class TrendingService:
 
         Returns:
             TrendingSearchResults object with trending search data and news articles
-            
+
         Raises:
             ApiRequestException: If API request fails
             NoDataException: If no data is available
@@ -211,9 +221,11 @@ class TrendingService:
             except (AttributeError, Exception) as e:
                 # Fall back to the older format if the newer one fails
                 logger.debug(f"Falling back to legacy trending with articles method: {str(e)}")
-                trending_df, news_articles_dict = self.client.get_trending_searches_with_articles(region=region, limit=limit)
+                trending_df, news_articles_dict = self.client.get_trending_searches_with_articles(
+                    region=region, limit=limit
+                )
                 topics = self._convert_trending_results(trending_df.head(limit))
-                
+
                 # For backward compatibility, add news articles to results
                 news_articles = {}
                 for keyword, articles in news_articles_dict.items():
@@ -230,7 +242,7 @@ class TrendingService:
                             )
                         )
                     news_articles[keyword] = news_article_models
-                
+
                 # Check if any topics need news articles from the dictionary
                 for topic in topics:
                     if topic.keyword in news_articles and not topic.news:
@@ -247,32 +259,32 @@ class TrendingService:
                             topics=topic.topics,
                             news_tokens=topic.news_tokens,
                             normalized_keyword=topic.normalized_keyword,
-                            news=news_articles[topic.keyword]
+                            news=news_articles[topic.keyword],
                         )
                         # Replace the topic in the list
                         idx = topics.index(topic)
                         topics[idx] = new_topic
-            
+
             if not topics:
                 raise NoDataException(f"No trending data available for region {region}")
 
             region_name = format_region_name(region)
-            
+
             # Prepare news_articles dictionary for backward compatibility
             news_articles = {}
             for topic in topics:
-                if hasattr(topic, 'news') and topic.news:
+                if hasattr(topic, "news") and topic.news:
                     news_articles[topic.keyword] = topic.news
-            
+
             return TrendingSearchResults(
                 topics=topics,
                 region_code=region,
                 region_name=region_name,
                 news_articles=news_articles,
             )
-            
+
         except NoDataException:
             raise
         except Exception as e:
             logger.error(f"Error fetching trending searches with articles: {str(e)}")
-            raise ApiRequestException(f"Failed to fetch trending searches with articles: {str(e)}") 
+            raise ApiRequestException(f"Failed to fetch trending searches with articles: {str(e)}")

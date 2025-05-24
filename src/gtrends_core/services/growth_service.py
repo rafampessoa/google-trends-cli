@@ -11,7 +11,6 @@ from trendspy import BatchPeriod
 from gtrends_core.config import DEFAULT_REGION
 from gtrends_core.exceptions.trends_exceptions import InvalidParameterException
 
-
 logger = logging.getLogger(__name__)
 
 

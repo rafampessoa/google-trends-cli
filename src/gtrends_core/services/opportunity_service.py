@@ -2,15 +2,13 @@
 
 import logging
 import time
-from typing import Dict, List, Optional, Union, Any
+from typing import List, Optional
 
 import pandas as pd
 import requests
 
-from gtrends_core.config import DEFAULT_REGION, DEFAULT_TIMEFRAME
-from gtrends_core.exceptions.trends_exceptions import InvalidParameterException
+from gtrends_core.config import DEFAULT_REGION
 from gtrends_core.utils.validators import validate_region_code
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ class OpportunityService:
         self.client = trends_client
         self._session = requests.Session()
         self._last_request_time = 0
-        
+
     def _throttle_requests(self, min_interval: float = 1.0):
         """Prevent sending too many requests in a short time.
 
@@ -41,7 +39,7 @@ class OpportunityService:
             time.sleep(min_interval - time_since_last)
 
         self._last_request_time = time.time()
-    
+
     def get_current_region(self) -> str:
         """Determine the user's current region based on IP.
 
@@ -100,89 +98,97 @@ class OpportunityService:
         except Exception as e:
             logger.warning(f"Error getting trending searches: {e}")
             trending_df = pd.DataFrame(columns=["title"])
-        
+
         # Second, get related topics for each seed
         related_data = []
-        
+
         for seed in seed_topics:
             try:
                 related_topics = self.client.get_related_topics(
                     query=seed, region=region, timeframe=timeframe
                 )
-                
+
                 # Process rising topics (have growth potential)
                 if "rising" in related_topics and not related_topics["rising"].empty:
                     rising_df = related_topics["rising"]
-                    
+
                     if "topic_title" in rising_df.columns:
                         for _, row in rising_df.iterrows():
                             title = row["topic_title"]
                             value = row["value"]
-                            
+
                             # Only add if not already in our list
                             if not any(r["topic"] == title for r in related_data):
-                                related_data.append({
-                                    "topic": title,
-                                    "growth_score": value,
-                                    "opportunity_score": self._calculate_opportunity_score(title, trending_df, value),
-                                    "related_to": seed,
-                                })
+                                related_data.append(
+                                    {
+                                        "topic": title,
+                                        "growth_score": value,
+                                        "opportunity_score": self._calculate_opportunity_score(
+                                            title, trending_df, value
+                                        ),
+                                        "related_to": seed,
+                                    }
+                                )
             except Exception as e:
                 logger.warning(f"Error getting related topics for {seed}: {e}")
-        
+
         # Find opportunities in trending searches if we don't have enough
         if len(related_data) < count and not trending_df.empty and "title" in trending_df.columns:
             for _, row in trending_df.iterrows():
                 title = row["title"]
-                
+
                 # Skip if already in our list
                 if any(r["topic"] == title for r in related_data):
                     continue
-                
+
                 # Find most related seed topic
                 best_seed = self._find_best_seed_match(title, seed_topics)
-                
+
                 # Calculate a synthetic opportunity score
                 opportunity_score = 75  # Trending items start with a high base score
-                
-                related_data.append({
-                    "topic": title,
-                    "growth_score": 100,  # It's trending, so maximum growth score
-                    "opportunity_score": opportunity_score,
-                    "related_to": best_seed,
-                })
-                
+
+                related_data.append(
+                    {
+                        "topic": title,
+                        "growth_score": 100,  # It's trending, so maximum growth score
+                        "opportunity_score": opportunity_score,
+                        "related_to": best_seed,
+                    }
+                )
+
                 # Stop if we have enough
                 if len(related_data) >= count:
                     break
-        
+
         # Generate article ideas for each opportunity
         opportunity_data = []
-        
+
         for item in related_data:
             topic = item["topic"]
             related_to = item["related_to"]
-            
+
             # Generate a writing suggestion
             suggestion = self._generate_writing_suggestion(topic, related_to)
-            
-            opportunity_data.append({
-                "topic": topic,
-                "opportunity_score": item["opportunity_score"],
-                "growth_score": item["growth_score"],
-                "article_idea": suggestion,
-                "related_to": related_to,
-            })
-        
+
+            opportunity_data.append(
+                {
+                    "topic": topic,
+                    "opportunity_score": item["opportunity_score"],
+                    "growth_score": item["growth_score"],
+                    "article_idea": suggestion,
+                    "related_to": related_to,
+                }
+            )
+
         # Create DataFrame and sort by opportunity score
         if opportunity_data:
             opportunities_df = pd.DataFrame(opportunity_data)
             opportunities_df = opportunities_df.sort_values(
                 by="opportunity_score", ascending=False
             ).reset_index(drop=True)
-            
+
             return opportunities_df.head(count)
-        
+
         # Return empty DataFrame if no results
         return pd.DataFrame(
             columns=["topic", "opportunity_score", "growth_score", "article_idea", "related_to"]
@@ -196,9 +202,11 @@ class OpportunityService:
         """
         return ["technology", "business", "health", "education", "entertainment"]
 
-    def _calculate_opportunity_score(self, topic: str, trending_df: pd.DataFrame, growth_value: float) -> float:
+    def _calculate_opportunity_score(
+        self, topic: str, trending_df: pd.DataFrame, growth_value: float
+    ) -> float:
         """Calculate an opportunity score for a topic.
-        
+
         The score is based on growth and whether it appears in trending searches.
 
         Args:
@@ -216,13 +224,13 @@ class OpportunityService:
         except (ValueError, TypeError):
             # Handle "Breakout" or other non-numeric values
             base_score = 60  # Assume maximum base score for "Breakout"
-        
+
         # Check if topic is in trending searches (exact or partial match)
         trending_bonus = 0
         if not trending_df.empty and "title" in trending_df.columns:
             trending_topics = trending_df["title"].str.lower().tolist()
             topic_lower = topic.lower()
-            
+
             # Check for exact match
             if topic_lower in trending_topics:
                 trending_bonus = 40  # Maximum bonus
@@ -232,7 +240,7 @@ class OpportunityService:
                     if topic_lower in trending_topic or trending_topic in topic_lower:
                         trending_bonus = 20  # Partial match bonus
                         break
-        
+
         # Combine scores, cap at 100
         return min(100, base_score + trending_bonus)
 
@@ -248,15 +256,15 @@ class OpportunityService:
         """
         if not seed_topics:
             return "general"
-            
+
         # Simple word matching for now
         topic_lower = topic.lower()
-        
+
         for seed in seed_topics:
             seed_lower = seed.lower()
             if seed_lower in topic_lower:
                 return seed
-                
+
         # If no match, return the first seed
         return seed_topics[0]
 
@@ -280,4 +288,4 @@ class OpportunityService:
         elif seed.lower() in ["education", "learning", "teaching"]:
             return f"Learning About {topic}: A Beginner's Guide"
         else:
-            return f"The Ultimate Guide to {topic}: Everything You Need to Know" 
+            return f"The Ultimate Guide to {topic}: Everything You Need to Know"

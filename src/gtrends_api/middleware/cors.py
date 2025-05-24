@@ -17,7 +17,7 @@ def add_cors_middleware(
     max_age: int = 600,
 ) -> None:
     """Add CORS middleware to the FastAPI application.
-    
+
     Args:
         app: FastAPI application
         allow_origins: List of allowed origins
@@ -42,7 +42,7 @@ def add_cors_middleware(
             "X-RateLimit-Remaining",
             "X-RateLimit-Reset",
         ]
-    
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allow_origins,
@@ -52,4 +52,4 @@ def add_cors_middleware(
         allow_credentials=allow_credentials,
         expose_headers=expose_headers,
         max_age=max_age,
-    ) 
+    )

@@ -1,27 +1,25 @@
 """Main FastAPI application for Google Trends API."""
 
 import logging
-from typing import Dict, Any
 import os
 import sys
-import uvicorn
+from typing import Dict
 
-from fastapi import FastAPI, Request, status
+import uvicorn
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from gtrends_api.middleware.error_handling import add_exception_handlers
 from gtrends_api.routers import (
-    trending,
-    related,
     comparison,
-    suggestions,
-    opportunities,
-    growth,
     geo,
+    growth,
+    opportunities,
+    related,
+    suggestions,
+    trending,
 )
 from gtrends_core import __version__
-from gtrends_core.exceptions.trends_exceptions import TrendsException
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +57,7 @@ add_exception_handlers(app)
 @app.get("/", tags=["health"])
 async def root() -> Dict[str, str]:
     """Health check endpoint.
-    
+
     Returns:
         Basic API information
     """
@@ -73,7 +71,7 @@ async def root() -> Dict[str, str]:
 @app.get("/health", tags=["health"])
 async def health_check() -> Dict[str, str]:
     """Health check endpoint.
-    
+
     Returns:
         Health status
     """
@@ -82,26 +80,21 @@ async def health_check() -> Dict[str, str]:
 
 def start_api():
     """Start the API server.
-    
+
     This function is used as an entry point for the CLI.
     """
     port = int(os.environ.get("PORT", 8000))
-    host = os.environ.get("HOST", "0.0.0.0")
-    
+    host = os.environ.get("HOST")
+
     print(f"Starting Google Trends API server v{__version__}")
     print(f"API documentation available at http://localhost:{port}/docs")
-    
+
     try:
-        uvicorn.run(
-            "gtrends_api.main:app",
-            host=host,
-            port=port,
-            reload=False
-        )
+        uvicorn.run("gtrends_api.main:app", host=host, port=port, reload=False)
     except Exception as e:
         print(f"Error starting API server: {e}")
         sys.exit(1)
 
 
 if __name__ == "__main__":
-    start_api() 
+    start_api()

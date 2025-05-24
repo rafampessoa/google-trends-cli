@@ -2,15 +2,13 @@
 
 import logging
 import time
-from typing import Dict, List, Optional, Union, Any
+from typing import List, Optional
 
 import pandas as pd
 import requests
 
-from gtrends_core.config import DEFAULT_CATEGORY, DEFAULT_REGION, DEFAULT_TIMEFRAME
-from gtrends_core.exceptions.trends_exceptions import InvalidParameterException
-from gtrends_core.utils.validators import validate_region_code, validate_category
-
+from gtrends_core.config import DEFAULT_REGION
+from gtrends_core.utils.validators import validate_category, validate_region_code
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ class SuggestionService:
         self.client = trends_client
         self._session = requests.Session()
         self._last_request_time = 0
-        
+
     def _throttle_requests(self, min_interval: float = 1.0):
         """Prevent sending too many requests in a short time.
 
@@ -41,7 +39,7 @@ class SuggestionService:
             time.sleep(min_interval - time_since_last)
 
         self._last_request_time = time.time()
-    
+
     def get_current_region(self) -> str:
         """Determine the user's current region based on IP.
 
@@ -92,7 +90,7 @@ class SuggestionService:
         # First, try to get trending searches
         try:
             trending_df = self.client.get_trending_searches(region=region)
-            
+
             # If the dataframe is empty or does not have required columns, create a base one
             if trending_df.empty or "title" not in trending_df.columns:
                 trending_df = pd.DataFrame(columns=["title"])
@@ -231,24 +229,74 @@ class SuggestionService:
         # Simple keyword matching for relevance
         category_keywords = {
             "books": [
-                "book", "read", "author", "novel", "literature", "story", "publish",
-                "fiction", "nonfiction", "writer", "chapter", "page", "library",
+                "book",
+                "read",
+                "author",
+                "novel",
+                "literature",
+                "story",
+                "publish",
+                "fiction",
+                "nonfiction",
+                "writer",
+                "chapter",
+                "page",
+                "library",
             ],
             "news": [
-                "news", "report", "journalist", "headline", "article", "media",
-                "press", "coverage", "event", "announcement", "breaking",
+                "news",
+                "report",
+                "journalist",
+                "headline",
+                "article",
+                "media",
+                "press",
+                "coverage",
+                "event",
+                "announcement",
+                "breaking",
             ],
             "arts": [
-                "art", "artist", "creative", "gallery", "exhibition", "museum",
-                "painting", "sculpture", "design", "drawing", "photograph",
+                "art",
+                "artist",
+                "creative",
+                "gallery",
+                "exhibition",
+                "museum",
+                "painting",
+                "sculpture",
+                "design",
+                "drawing",
+                "photograph",
             ],
             "fiction": [
-                "fiction", "novel", "fantasy", "scifi", "story", "plot", "character",
-                "series", "chapter", "book", "author", "genre", "literature",
+                "fiction",
+                "novel",
+                "fantasy",
+                "scifi",
+                "story",
+                "plot",
+                "character",
+                "series",
+                "chapter",
+                "book",
+                "author",
+                "genre",
+                "literature",
             ],
             "culture": [
-                "culture", "tradition", "heritage", "identity", "history", "society",
-                "community", "social", "custom", "practice", "belief", "ritual",
+                "culture",
+                "tradition",
+                "heritage",
+                "identity",
+                "history",
+                "society",
+                "community",
+                "social",
+                "custom",
+                "practice",
+                "belief",
+                "ritual",
             ],
         }
 
@@ -264,7 +312,7 @@ class SuggestionService:
         # Calculate relevance score
         if matches > 0:
             return min(100, matches * 25)  # Scale up to 100
-        
+
         return 0
 
     def _get_category_id(self, category: str) -> str:
@@ -285,4 +333,4 @@ class SuggestionService:
             "fiction": "22",
             "culture": "3",
         }
-        return content_categories.get(category.lower(), "0") 
+        return content_categories.get(category.lower(), "0")

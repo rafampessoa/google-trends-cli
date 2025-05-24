@@ -1,12 +1,10 @@
 """Main entry point for the Google Trends CLI."""
 
 import sys
-from typing import Optional
 
 import click
 from rich.console import Console
 
-from gtrends_core import __version__
 from gtrends_cli.commands.categories_command import categories_command
 from gtrends_cli.commands.compare_command import compare_command
 from gtrends_cli.commands.geo_command import geo_command, geo_interest_command
@@ -16,6 +14,7 @@ from gtrends_cli.commands.opportunities_command import writing_opportunities_com
 from gtrends_cli.commands.related_command import related_command
 from gtrends_cli.commands.suggestions_command import suggest_topics_command
 from gtrends_cli.commands.trending_command import trending_command
+from gtrends_core import __version__
 
 console = Console()
 
@@ -24,7 +23,6 @@ console = Console()
 @click.version_option(version=__version__)
 def cli():
     """Google Trends CLI - Fetch trending topics & analyze search interests for content creators."""
-    pass
 
 
 # Register commands
@@ -50,4 +48,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

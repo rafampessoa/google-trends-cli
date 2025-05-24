@@ -2,15 +2,14 @@
 
 import logging
 import time
-from typing import Dict, List, Optional
+from typing import Optional
 
-import pandas as pd
 import requests
 
 from gtrends_core.config import DEFAULT_CATEGORY, DEFAULT_REGION, DEFAULT_TIMEFRAME
 from gtrends_core.exceptions.trends_exceptions import ApiRequestException, NoDataException
 from gtrends_core.models.base import RelatedTopic
-from gtrends_core.models.related import RelatedQueryResults, RelatedTopicResults, RelatedData
+from gtrends_core.models.related import RelatedData, RelatedQueryResults, RelatedTopicResults
 from gtrends_core.utils.helpers import format_region_name
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class RelatedService:
     """Service for fetching related topics and queries from Google Trends."""
-    
+
     def __init__(self, trends_client):
         """Initialize with a TrendsClient instance.
 
@@ -28,7 +27,7 @@ class RelatedService:
         self.client = trends_client
         self._session = requests.Session()
         self._last_request_time = 0
-    
+
     def _throttle_requests(self, min_interval: float = 1.0):
         """Prevent sending too many requests in a short time.
 
@@ -42,7 +41,7 @@ class RelatedService:
             time.sleep(min_interval - time_since_last)
 
         self._last_request_time = time.time()
-    
+
     def get_current_region(self) -> str:
         """Determine the user's current region based on IP.
 
@@ -58,7 +57,7 @@ class RelatedService:
             # Fallback to default region on any error
             logger.warning(f"Failed to detect region: {str(e)}")
             return DEFAULT_REGION
-    
+
     def get_related_data(
         self,
         query: str,
@@ -85,7 +84,7 @@ class RelatedService:
             # Get both related topics and queries
             topics_result = self.get_related_topics(query, region, timeframe, category)
             queries_result = self.get_related_queries(query, region, timeframe, category)
-            
+
             # Create a combined result
             return RelatedData(
                 query=query,
@@ -93,20 +92,17 @@ class RelatedService:
                 region_name=topics_result.region_name,
                 timeframe=timeframe,
                 category=category,
-                topics={
-                    "top": topics_result.top_topics,
-                    "rising": topics_result.rising_topics
-                },
+                topics={"top": topics_result.top_topics, "rising": topics_result.rising_topics},
                 queries={
                     "top": queries_result.top_queries,
-                    "rising": queries_result.rising_queries
+                    "rising": queries_result.rising_queries,
                 },
             )
-            
+
         except Exception as e:
             logger.error(f"Error fetching related data: {str(e)}")
             raise ApiRequestException(f"Failed to fetch related data: {str(e)}")
-        
+
     def get_related_topics(
         self,
         query: str,
@@ -137,10 +133,8 @@ class RelatedService:
             results = self.client.get_related_topics(
                 query=query, region=region, timeframe=timeframe, category=category
             )
-            
-            if not results or (
-                "top" not in results and "rising" not in results
-            ):
+
+            if not results or ("top" not in results and "rising" not in results):
                 raise NoDataException(f"No related topics available for '{query}'")
 
             # Extract top and rising topics
@@ -161,7 +155,7 @@ class RelatedService:
                     # Handle "Breakout" values
                     value_text = None
                     value = 0.0
-                    
+
                     if isinstance(row.get("value"), str) and row.get("value").lower() == "breakout":
                         value_text = "Breakout"
                         value = 5000.0  # Arbitrary high value for sorting
@@ -170,7 +164,7 @@ class RelatedService:
                             value = float(row.get("value", 0))
                         except (ValueError, TypeError):
                             value = 0.0
-                    
+
                     rising_topics.append(
                         RelatedTopic(
                             title=row.get("topic_title", ""),
@@ -196,7 +190,7 @@ class RelatedService:
         except Exception as e:
             logger.error(f"Error fetching related topics: {str(e)}")
             raise ApiRequestException(f"Failed to fetch related topics: {str(e)}")
-            
+
     def get_related_queries(
         self,
         query: str,
@@ -227,10 +221,8 @@ class RelatedService:
             results = self.client.get_related_queries(
                 query=query, region=region, timeframe=timeframe, category=category
             )
-            
-            if not results or (
-                "top" not in results and "rising" not in results
-            ):
+
+            if not results or ("top" not in results and "rising" not in results):
                 raise NoDataException(f"No related queries available for '{query}'")
 
             # Extract top and rising queries
@@ -251,7 +243,7 @@ class RelatedService:
                     # Handle "Breakout" values
                     value_text = None
                     value = 0.0
-                    
+
                     if isinstance(row.get("value"), str) and row.get("value").lower() == "breakout":
                         value_text = "Breakout"
                         value = 5000.0  # Arbitrary high value for sorting
@@ -260,7 +252,7 @@ class RelatedService:
                             value = float(row.get("value", 0))
                         except (ValueError, TypeError):
                             value = 0.0
-                    
+
                     rising_queries.append(
                         RelatedTopic(
                             title=row.get("query", ""),
@@ -285,4 +277,4 @@ class RelatedService:
             raise
         except Exception as e:
             logger.error(f"Error fetching related queries: {str(e)}")
-            raise ApiRequestException(f"Failed to fetch related queries: {str(e)}") 
+            raise ApiRequestException(f"Failed to fetch related queries: {str(e)}")

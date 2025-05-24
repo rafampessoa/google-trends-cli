@@ -1,12 +1,8 @@
 """Common helper functions for Google Trends functionality."""
 
 import logging
-import os
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Union
-
-from gtrends_core.exceptions.trends_exceptions import InvalidParameterException
+from typing import Dict, List, Union
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -14,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 def ensure_list(value: Union[str, List[str], List[dict]]) -> List:
     """Ensure a value is a list.
-    
+
     Args:
         value: String, list of strings, or list of dictionaries
-        
+
     Returns:
         List containing the value or the original list
     """
@@ -28,14 +24,14 @@ def ensure_list(value: Union[str, List[str], List[dict]]) -> List:
 
 def format_region_name(region_code: str) -> str:
     """Format a region code into a readable name.
-    
+
     Args:
         region_code: Two-letter region code
-        
+
     Returns:
         Formatted region name
     """
-    # This is a simplified version, in a real implementation 
+    # This is a simplified version, in a real implementation
     # we would use a country code mapping
     region_names = {
         "US": "United States",
@@ -59,7 +55,7 @@ def format_region_name(region_code: str) -> str:
 
 def get_timestamp_str() -> str:
     """Get a formatted timestamp string for filenames.
-    
+
     Returns:
         Timestamp string in format 'YYYYMMDD_HHMMSS'
     """
@@ -68,7 +64,7 @@ def get_timestamp_str() -> str:
 
 def get_topic_id_map() -> Dict[int, str]:
     """Get a mapping of topic IDs to topic names.
-    
+
     Returns:
         Dictionary mapping topic IDs (integers) to topic names (strings)
     """
@@ -91,20 +87,20 @@ def get_topic_id_map() -> Dict[int, str]:
         16: "Shopping",
         17: "Sports",
         18: "Technology",
-        19: "Travel and Transportation"
+        19: "Travel and Transportation",
     }
 
 
 def truncate_string(s: str, max_length: int) -> str:
     """Truncate a string to a maximum length, adding ellipsis if truncated.
-    
+
     Args:
         s: String to truncate
         max_length: Maximum length of the string
-        
+
     Returns:
         Truncated string with ellipsis if needed
     """
     if len(s) <= max_length:
         return s
-    return s[:max_length - 3] + "..." 
+    return s[: max_length - 3] + "..."
