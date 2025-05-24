@@ -13,7 +13,7 @@ from gtrends_api.schemas.responses import (
     TrendingTopicResponse,
 )
 from gtrends_core.services.trending_service import TrendingService
-from gtrends_core.utils import validate_region_code
+from gtrends_core.utils.validators import validate_region_code
 
 logger = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ from gtrends_cli.formatters.console import format_trending_searches
 from gtrends_cli.formatters.export import export_data
 from gtrends_core.config import DEFAULT_SUGGESTIONS_COUNT, get_trends_client
 from gtrends_core.services.trending_service import TrendingService
-from gtrends_core.utils import validate_export_path, validate_region_code
+from gtrends_core.utils.validators import validate_export_path, validate_region_code
 
 console = Console()
 
