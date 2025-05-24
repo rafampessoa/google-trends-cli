@@ -4,7 +4,7 @@ This guide will help you set up a development environment for working on the Goo
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- Python 3.9 or higher
 - pip (Python package installer)
 - Git
 

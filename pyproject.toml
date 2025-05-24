@@ -23,13 +23,17 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [project.urls]
 Homepage = "https://github.com/Nao-30/google-trends-cli"
 Documentation = "https://github.com/Nao-30/google-trends-cli/tree/main/docs"
 Repository = "https://github.com/Nao-30/google-trends-cli.git"
 Issues = "https://github.com/Nao-30/google-trends-cli/issues"
+
+[project.scripts]
+gtrends = "gtrends_cli.main:cli"
+gtrends-api = "gtrends_api.main:start_api"
 
 [tool.black]
 line-length = 100
@@ -53,7 +57,7 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

@@ -4,7 +4,7 @@ This guide provides instructions for installing the Google Trends CLI and API to
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- Python 3.9 or higher
 - pip (Python package installer)
 
 ## Installation Options
@@ -82,7 +82,7 @@ Then access the API at http://localhost:8000
 
 If you encounter issues:
 
-1. Ensure you have the correct Python version (3.8+)
+1. Ensure you have the correct Python version (3.9+)
 2. Try upgrading pip: `pip install --upgrade pip`
 3. If you're behind a proxy, configure pip to use it
 4. Check if any dependencies are conflicting with existing packages

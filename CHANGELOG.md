@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security scanning with bandit
 - Improved package management with modern Python standards
 - Enhanced project metadata and classifiers
-- Support for Python 3.8, 3.9, and 3.10
+- Support for Python 3.9, 3.10 and 3.12 
 - Redis-based caching for production environments
 - Proper health checks for Docker containers
 - Rate limiting and CORS configuration for API
