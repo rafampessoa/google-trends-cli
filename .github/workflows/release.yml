@@ -52,12 +52,23 @@ jobs:
       - name: Get current version
         id: current
         run: |
-          if [ -f "gtrends/__init__.py" ]; then
-            CURRENT_VERSION=$(grep -Po "__version__\s*=\s*[\"']\K[^\"']*" gtrends/__init__.py || echo "0.0.0")
-            echo "Current version from __init__.py: $CURRENT_VERSION"
-          elif [ -f "setup.py" ]; then
+          # Check setup.py first
+          if [ -f "setup.py" ]; then
             CURRENT_VERSION=$(grep -Po "version=[\"']\K[^\"']*" setup.py || echo "0.0.0")
             echo "Current version from setup.py: $CURRENT_VERSION"
+          # Check setup.cfg next
+          elif [ -f "setup.cfg" ]; then
+            CURRENT_VERSION=$(grep -Po "version\s*=\s*\K[^\"']*" setup.cfg || echo "0.0.0")
+            echo "Current version from setup.cfg: $CURRENT_VERSION"
+          # Finally, check if any modules have __init__.py with version
+          elif [ -d "src" ]; then
+            for init_file in $(find src -name "__init__.py"); do
+              if grep -q "__version__" "$init_file"; then
+                CURRENT_VERSION=$(grep -Po "__version__\s*=\s*[\"']\K[^\"']*" "$init_file" || echo "0.0.0")
+                echo "Current version from $init_file: $CURRENT_VERSION"
+                break
+              fi
+            done
           else
             echo "::warning::Could not find version files. Using default 0.0.0"
             CURRENT_VERSION="0.0.0"
@@ -95,27 +106,6 @@ jobs:
           
       - name: Update version number
         run: |
-          # Update version in __init__.py - more robust pattern matching
-          if [ -f "gtrends/__init__.py" ]; then
-            if grep -q "__version__" gtrends/__init__.py; then
-              if grep -q "__version__ = '" gtrends/__init__.py; then
-                # Single quote format
-                sed -i "s/__version__ = '[^']*'/__version__ = '${{ steps.next.outputs.next_version }}'/" gtrends/__init__.py
-              elif grep -q '__version__ = "' gtrends/__init__.py; then
-                # Double quote format
-                sed -i 's/__version__ = "[^"]*"/__version__ = "${{ steps.next.outputs.next_version }}"/' gtrends/__init__.py
-              else
-                echo "::warning::Could not find exact version string pattern in __init__.py, attempting generic replacement"
-                sed -i "s/__version__\s*=\s*[\"'][^\"']*[\"']/__version__ = '${{ steps.next.outputs.next_version }}'/" gtrends/__init__.py
-              fi
-              echo "Updated version in __init__.py"
-            else
-              echo "::warning::No __version__ variable found in __init__.py"
-            fi
-          else
-            echo "::warning::gtrends/__init__.py file not found"
-          fi
-          
           # Update version in setup.py
           if [ -f "setup.py" ]; then
             if grep -q "version=" setup.py; then
@@ -128,15 +118,44 @@ jobs:
             echo "::warning::setup.py file not found"
           fi
           
+          # Update version in setup.cfg
+          if [ -f "setup.cfg" ]; then
+            if grep -q "version\s*=" setup.cfg; then
+              sed -i "s/version\s*=\s*[0-9.]*/version = ${{ steps.next.outputs.next_version }}/" setup.cfg
+              echo "Updated version in setup.cfg"
+            else
+              echo "::warning::No version= string found in setup.cfg"
+            fi
+          fi
+          
+          # Update version in any __init__.py files that contain __version__
+          if [ -d "src" ]; then
+            for init_file in $(find src -name "__init__.py"); do
+              if grep -q "__version__" "$init_file"; then
+                if grep -q "__version__ = '" "$init_file"; then
+                  # Single quote format
+                  sed -i "s/__version__ = '[^']*'/__version__ = '${{ steps.next.outputs.next_version }}'/" "$init_file"
+                elif grep -q '__version__ = "' "$init_file"; then
+                  # Double quote format
+                  sed -i 's/__version__ = "[^"]*"/__version__ = "${{ steps.next.outputs.next_version }}"/' "$init_file"
+                else
+                  # Generic replacement
+                  sed -i "s/__version__\s*=\s*[\"'][^\"']*[\"']/__version__ = '${{ steps.next.outputs.next_version }}'/" "$init_file"
+                fi
+                echo "Updated version in $init_file"
+              fi
+            done
+          fi
+          
           # Debug - verify files were updated
           echo "Updated files:"
-          if [ -f "gtrends/__init__.py" ]; then
-            echo "gtrends/__init__.py content:"
-            cat gtrends/__init__.py
-          fi
           if [ -f "setup.py" ]; then
             echo "setup.py content:"
             cat setup.py
+          fi
+          if [ -f "setup.cfg" ]; then
+            echo "setup.cfg content:"
+            cat setup.cfg
           fi
           
       - name: Update Changelog
@@ -191,7 +210,7 @@ jobs:
           git checkout -b $RELEASE_BRANCH
           
           # Stage all changes
-          git add gtrends/__init__.py setup.py CHANGELOG.md
+          git add setup.py setup.cfg CHANGELOG.md $(find src -name "__init__.py" -exec grep -l "__version__" {} \;)
           
           # Debug git status
           echo "Git status after adding files:"
