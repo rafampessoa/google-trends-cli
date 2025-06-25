@@ -160,7 +160,7 @@ class TrendsClient:
 
         return pd.DataFrame(data)
 
-    def get_trending_searches(self, region: Optional[str] = None, limit: int = 20) -> pd.DataFrame:
+    def get_trending_searches(self, region: Optional[str] = None, limit: int = 20, hours: int = 24) -> pd.DataFrame:
         """Get real-time trending searches.
 
         Args:
@@ -177,7 +177,7 @@ class TrendsClient:
 
         try:
             # Get trending searches
-            trending = self.trends.trending_now(geo=region)
+            trending = self.trends.trending_now(geo=region, hours=hours)
 
             # Convert TrendKeyword objects to DataFrame for consistent interface
             data = []

@@ -146,7 +146,7 @@ class TrendingService:
         return topics
 
     def get_trending_searches(
-        self, region: Optional[str] = None, limit: int = 20
+        self, region: Optional[str] = None, limit: int = 20, hours: int = 24
     ) -> TrendingSearchResults:
         """Get real-time trending searches.
 
@@ -168,17 +168,17 @@ class TrendingService:
             # Try to get trending searches using the newer format first
             try:
                 # This will attempt to use the trending_now method which return TrendKeyword objects
-                trending_data = self.client.trends.trending_now(geo=region)
+                trending_data = self.client.trends.trending_now(geo=region, hours=hours)
                 topics = self._convert_trending_results(trending_data[:limit])
             except (AttributeError, Exception) as e:
                 # Fall back to the older format if the newer one fails
                 logger.debug(f"Falling back to legacy trending method: {str(e)}")
                 print(f"Falling back to legacy trending method: {str(e)}")
-                trending_df = self.client.get_trending_searches(region=region)
+                trending_df = self.client.get_trending_searches(region=region, hours=hours)
                 topics = self._convert_trending_results(trending_df.head(limit))
 
             if not topics:
-                raise NoDataException(f"No trending data available for region {region}")
+                raise NoDataException(f"No trending data available for region {region}")    
 
             region_name = format_region_name(region)
             return TrendingSearchResults(
